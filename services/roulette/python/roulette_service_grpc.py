@@ -28,8 +28,6 @@ except ImportError:
     except ImportError:
         logger = None
 
-<<<<<<< HEAD
-=======
 # Import Redis helper
 try:
     from redis_helper import initialize_redis, save_game_state, get_game_state, delete_game_state
@@ -77,7 +75,6 @@ except ImportError:
             env_value = os.getenv(env_key, str(default_value))
             return env_value.lower() in ("true", "1", "yes")
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 # Import generated gRPC code
 # Proto files are generated in the same directory during Docker build
 try:
@@ -91,10 +88,7 @@ except ImportError:
 # Import OpenTelemetry setup
 try:
     from opentelemetry import trace
-<<<<<<< HEAD
-=======
     from opentelemetry.propagate import extract
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     from opentelemetry_setup import initialize_telemetry, add_game_attributes, add_http_attributes
     tracer = initialize_telemetry("vegas-roulette-service", {
         "version": "2.1.0",
@@ -108,10 +102,7 @@ try:
 except (ImportError, NameError):
     print("Warning: OpenTelemetry not available, running without instrumentation")
     tracer = None
-<<<<<<< HEAD
-=======
     extract = None
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
 # Service metadata
 METADATA = {
@@ -172,16 +163,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
         )
 
     def Spin(self, request, context):
-<<<<<<< HEAD
-        if tracer:
-            span = tracer.start_span("roulette_spin")
-            add_http_attributes(span, "POST", "/spin")
-        else:
-            span = None
-
-        bet_type = request.bet_type or "red"
-        bet_amount = request.bet_amount or 10
-=======
         # Extract trace context from gRPC metadata
         extracted_context = None
         if tracer and extract and context:
@@ -214,7 +195,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
         bet_type = request.bet_type or "red"
         bet_amount = request.bet_amount or 10
         bet_value = request.bet_value or {}  # For multiple bets
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         cheat_active = request.cheat_active
         cheat_type = request.cheat_type or ""
         
@@ -223,8 +203,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
         if request.player_info:
             username = request.player_info.get("username", "Anonymous")
 
-<<<<<<< HEAD
-=======
         # Check house advantage feature flag
         house_advantage_enabled = get_feature_flag("casino.house-advantage", False)
         if span:
@@ -232,7 +210,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
         if house_advantage_enabled:
             print(f"[Roulette] 🏠 House advantage mode enabled - reducing win probability")
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         # Log game start
         if logger:
             logger.log_game_start("roulette", username, bet_amount, {
@@ -261,15 +238,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
             boost_chance = get_cheat_boost_chance(cheat_type)
             if random.random() < boost_chance:
                 cheat_boosted = True
-<<<<<<< HEAD
-                # Try to favor player bets
-                if bet_type == "red" and color != "red":
-                    winning_number = random.choice(RED_NUMBERS)
-                    color = "red"
-                elif bet_type == "black" and color != "black":
-                    winning_number = random.choice([n for n in range(1, 37) if n not in RED_NUMBERS])
-                    color = "black"
-=======
                 print(f"[Roulette] ?? Cheat boosted! bet_type={bet_type}, boost_chance={boost_chance}")
                 
                 # Handle multiple bets with cheat
@@ -354,7 +322,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
                                     break
                             except (ValueError, TypeError):
                                 pass
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 
                 # Log cheat activation
                 if logger:
@@ -362,22 +329,15 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
                         "game": "roulette",
                         "username": username,
                         "cheat_type": cheat_type,
-<<<<<<< HEAD
-                        "cheat_boosted": cheat_boosted
-=======
                         "cheat_boosted": cheat_boosted,
                         "winning_number": winning_number,
                         "color": color
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     })
 
         # Calculate win and payout
         win = False
         payout = 0.0
 
-<<<<<<< HEAD
-        if bet_type == "red":
-=======
         # Handle multiple bets (bet_type == "multiple" with bet_value dict)
         if bet_type == "multiple" and bet_value:
             # ALL multiple bets are evaluated independently:
@@ -487,31 +447,12 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
             )
             print("[Roulette] ===================================")
         elif bet_type == "red":
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             win = color == "red"
             payout = bet_amount * 2 if win else 0
         elif bet_type == "black":
             win = color == "black"
             payout = bet_amount * 2 if win else 0
         elif bet_type == "even":
-<<<<<<< HEAD
-            win = winning_number > 0 and winning_number % 2 == 0
-            payout = bet_amount * 2 if win else 0
-        elif bet_type == "odd":
-            win = winning_number > 0 and winning_number % 2 == 1
-            payout = bet_amount * 2 if win else 0
-        elif bet_type == "low":
-            win = 1 <= winning_number <= 18
-            payout = bet_amount * 2 if win else 0
-        elif bet_type == "high":
-            win = 19 <= winning_number <= 36
-            payout = bet_amount * 2 if win else 0
-        elif bet_type == "straight":
-            # For straight bets, check if any bet matches
-            win = False
-            payout = 0
-
-=======
             # Even numbers: 2, 4, 6, ..., 36 (0 is NOT even for betting purposes)
             win = winning_number > 0 and winning_number % 2 == 0
             payout = bet_amount * 2 if win else 0
@@ -611,7 +552,6 @@ class RouletteServiceServicer(roulette_pb2_grpc.RouletteServiceServicer):
                 },
             })
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         # Log game result
         if logger:
             logger.log_game_end("roulette", username, f"Number {winning_number} ({color})", payout, win, {
@@ -675,11 +615,7 @@ def generate_roulette_html():
 </head>
 <body class="bg-green-900 text-white p-4">
     <div id="roulette-game-container" class="max-w-2xl mx-auto">
-<<<<<<< HEAD
-        <h1 class="text-3xl font-bold mb-4 text-center">🎲 Roulette</h1>
-=======
         <h1 class="text-3xl font-bold mb-4 text-center">?? Roulette</h1>
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         <div id="roulette-result" class="text-center mb-4">
             <div id="winning-number" class="text-6xl font-bold mb-2">?</div>
             <div id="color" class="text-2xl"></div>
@@ -731,17 +667,10 @@ async function initRouletteGame() {
             
             if (response.win) {
                 document.getElementById('result').innerHTML = 
-<<<<<<< HEAD
-                    `<div class="text-green-500 text-xl">🎉 Win! Payout: $${response.payout.toFixed(2)}</div>`;
-            } else {
-                document.getElementById('result').innerHTML = 
-                    `<div class="text-red-500 text-xl">😢 No win this time</div>`;
-=======
                     `<div class="text-green-500 text-xl">?? Win! Payout: $${response.payout.toFixed(2)}</div>`;
             } else {
                 document.getElementById('result').innerHTML = 
                     `<div class="text-red-500 text-xl">?? No win this time</div>`;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             }
         } catch (error) {
             console.error('Error spinning roulette:', error);
@@ -843,11 +772,7 @@ def serve_http():
     server = HTTPServer(('0.0.0.0', http_port), RouletteHTTPHandler)
     if logger:
         logger.log_info("Roulette HTTP server started", {"port": http_port})
-<<<<<<< HEAD
-    print(f"🎲 Roulette HTTP server listening on port {http_port}")
-=======
     print(f"?? Roulette HTTP server listening on port {http_port}")
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     server.serve_forever()
 
 
@@ -869,20 +794,13 @@ def serve_grpc():
     server.start()
     if logger:
         logger.log_info("Roulette gRPC server started", {"port": grpc_port})
-<<<<<<< HEAD
-    print(f"🎲 Roulette gRPC server listening on port {grpc_port}")
-=======
     print(f"?? Roulette gRPC server listening on port {grpc_port}")
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     server.wait_for_termination()
 
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-=======
     # Initialize Redis
     initialize_redis()
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     import threading
     
     service_name = os.getenv("SERVICE_NAME", "vegas-roulette-service")
@@ -904,11 +822,7 @@ if __name__ == '__main__':
     # Keep main thread alive
     if logger:
         logger.log_info("Roulette service running (HTTP + gRPC)")
-<<<<<<< HEAD
-    print("🎲 Roulette service running (HTTP + gRPC)")
-=======
     print("?? Roulette service running (HTTP + gRPC)")
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     print("Press Ctrl+C to stop")
     
     try:

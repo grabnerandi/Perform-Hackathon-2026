@@ -32,18 +32,12 @@
     
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<<<<<<< HEAD
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-=======
     <!-- Socket.IO removed - using HTTP/gRPC architecture instead -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- OpenTelemetry Browser Instrumentation -->
     <script src="/js/opentelemetry-browser.js"></script>
     
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     <style>
         /* Blackjack specific styles */
         .blackjack-bg {
@@ -690,19 +684,11 @@
                             <div class="betting-area">
                                 <h3 class="text-dt-green font-semibold mb-4">Betting Chips</h3>
                                 <div class="flex justify-center space-x-4 mb-4">
-<<<<<<< HEAD
-                                    <div class="chip chip-5" onclick="setBet(5)">$5</div>
-                                    <div class="chip chip-10" onclick="setBet(10)">$10</div>
-                                    <div class="chip chip-25" onclick="setBet(25)">$25</div>
-                                    <div class="chip chip-50" onclick="setBet(50)">$50</div>
-                                    <div class="chip chip-100" onclick="setBet(100)">$100</div>
-=======
                                     <div class="chip chip-5" onclick="setBet(5, event)">$5</div>
                                     <div class="chip chip-10" onclick="setBet(10, event)">$10</div>
                                     <div class="chip chip-25" onclick="setBet(25, event)">$25</div>
                                     <div class="chip chip-50" onclick="setBet(50, event)">$50</div>
                                     <div class="chip chip-100" onclick="setBet(100, event)">$100</div>
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                                 </div>
                                 <div class="text-center">
                                     <div class="text-dt-light-gray mb-2">Current Bet:</div>
@@ -714,11 +700,7 @@
                             <div class="betting-area">
                                 <h3 class="text-dt-green font-semibold mb-4">Game Actions</h3>
                                 <div class="grid grid-cols-2 gap-3">
-<<<<<<< HEAD
-                                    <button class="action-button" id="dealButton" onclick="startNewHand()">
-=======
                                     <button class="action-button" id="dealButton" onclick="startNewHand()" style="cursor: pointer; pointer-events: auto;">
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                                         Deal Cards
                                     </button>
                                     <button class="action-button" id="hitButton" onclick="playerHit()" disabled>
@@ -747,13 +729,8 @@
     </main>
 
     <script>
-<<<<<<< HEAD
-        // Initialize Socket.IO
-        const socket = io();
-=======
         // Socket.IO removed - using HTTP/gRPC architecture instead
         // Backend handles all game logic, frontend only renders UI
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         
         // Check if user has the new required fields, if not populate with defaults
         function ensureUserProfileComplete() {
@@ -877,11 +854,7 @@
             cheatState.active = null;
             cheatState.winBoost = 0;
             updateCheatUI();
-<<<<<<< HEAD
-            showMessage('🔄 Configuration reset to baseline', 'info');
-=======
             showNotification('🔄 Configuration reset to baseline', 'info');
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         }
         
         function updateCheatUI() {
@@ -952,11 +925,8 @@
 
         // Game state
         let gameState = 'waiting'; // waiting, playing, dealer_turn, finished
-<<<<<<< HEAD
-=======
         // Game state is now managed by backend via Redis
         // These are kept for compatibility but should not be used for game logic
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         let playerHand = [];
         let dealerHand = [];
         let currentBet = 0;
@@ -975,15 +945,9 @@
             runningCount: 0
         };
         
-<<<<<<< HEAD
-        function setBet(amount) {
-            if (gameState !== 'waiting') return;
-            
-=======
         function setBet(amount, event) {
             if (gameState !== 'waiting') return;
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             const currentBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
             const newTotalBet = currentBet + amount;
             
@@ -996,17 +960,6 @@
             currentBet = newTotalBet;
             document.getElementById('currentBet').textContent = `$${currentBet}`;
             
-<<<<<<< HEAD
-            // Animate the clicked chip
-            event.target.style.transform = 'scale(1.2)';
-            event.target.style.boxShadow = '0 0 20px rgba(115, 190, 40, 0.8)';
-            
-            // Reset animation after a moment
-            setTimeout(() => {
-                event.target.style.transform = 'scale(1)';
-                event.target.style.boxShadow = '';
-            }, 300);
-=======
             // Animate the clicked chip - get element from event or find by amount
             const clickedChip = event?.target || document.querySelector(`.chip-${amount}`);
             if (clickedChip) {
@@ -1019,7 +972,6 @@
                     clickedChip.style.boxShadow = '';
                 }, 300);
             }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             
             // Show feedback
             showNotification(`Added $${amount} chip! Total bet: $${currentBet}`, 'success');
@@ -1043,34 +995,6 @@
             updateStrategyHint();
         }
         
-<<<<<<< HEAD
-        // Local deck management
-        let deck = [];
-        
-        function createDeck() {
-            const suits = ['♠', '♣', '♥', '♦'];
-            const ranks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; // 1=Ace, 11=Jack, 12=Queen, 13=King
-            deck = [];
-            
-            for (let suit of suits) {
-                for (let rank of ranks) {
-                    deck.push({ suit, rank });
-                }
-            }
-            
-            // Shuffle deck
-            for (let i = deck.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [deck[i], deck[j]] = [deck[j], deck[i]];
-            }
-        }
-        
-        function drawCard() {
-            if (deck.length < 10) {
-                createDeck(); // Reshuffle when low
-            }
-            return deck.pop();
-=======
         // Game state - managed by backend via Redis
         let currentGameState = null;
         
@@ -1130,7 +1054,6 @@
             }
             
             return converted;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         }
         
         async function startNewHand() {
@@ -1147,91 +1070,6 @@
                 return;
             }
             
-<<<<<<< HEAD
-            // Deduct bet from balance
-            const newBalance = currentBalance - currentBet;
-            localStorage.setItem('vegasBalance', String(newBalance));
-            document.getElementById('balanceDisplay').textContent = `$${newBalance}`;
-            
-            // Reset game state
-            gameState = 'playing';
-            playerHand = [];
-            dealerHand = [];
-            
-            // Clear cards display
-            document.getElementById('playerCards').innerHTML = '';
-            document.getElementById('dealerCards').innerHTML = '';
-            
-            // Reset scores
-            document.getElementById('playerScore').textContent = '0';
-            document.getElementById('dealerScore').textContent = '0';
-            
-            // Update UI
-            updateGameStatus('Dealing cards...');
-            updateActionButtons();
-            
-            // Create deck if needed
-            if (deck.length === 0) {
-                createDeck();
-            }
-            
-            // Deal cards sequentially with animation
-            try {
-                console.log('Starting sequential card dealing...');
-                
-                // Player first card
-                const playerCard1 = drawCard();
-                playerHand.push(playerCard1);
-                addCardToHand('player', playerCard1);
-                await new Promise(resolve => setTimeout(resolve, 600));
-                
-                // Dealer first card
-                const dealerCard1 = drawCard();
-                dealerHand.push(dealerCard1);
-                addCardToHand('dealer', dealerCard1);
-                await new Promise(resolve => setTimeout(resolve, 600));
-                
-                // Player second card
-                const playerCard2 = drawCard();
-                playerHand.push(playerCard2);
-                addCardToHand('player', playerCard2);
-                await new Promise(resolve => setTimeout(resolve, 600));
-                
-                // Dealer second card (hidden)
-                const dealerCard2 = drawCard();
-                dealerHand.push(dealerCard2);
-                addCardToHand('dealer', { suit: 'hidden', rank: 'hidden' }, true);
-                await new Promise(resolve => setTimeout(resolve, 600));
-                
-                console.log('All cards dealt sequentially');
-                
-            } catch (error) {
-                console.error('Error during card dealing:', error);
-            }
-            
-            const playerScore = calculateScore(playerHand);
-            const dealerScore = calculateScore([dealerHand[0]]); // Only show first card
-            
-            // Update scores
-            updateScores(playerScore, dealerScore);
-            
-            // Check for blackjack
-            if (playerScore === 21) {
-                gameState = 'finished';
-                const dealerActualScore = calculateScore(dealerHand);
-                await revealDealerCard();
-                updateScores(playerScore, dealerActualScore);
-                
-                if (dealerActualScore === 21) {
-                    handleGameEnd('push', 'Both blackjack! Push.', currentBet);
-                } else {
-                    handleGameEnd('blackjack', 'Blackjack! You win!', Math.floor(currentBet * 2.5));
-                }
-            } else {
-                updateGameStatus('Your turn. Hit or stand?');
-                updateActionButtons();
-                updateStrategyHint();
-=======
             // Get username
             const username = localStorage.getItem('vegas.username') || localStorage.getItem('vegasUser') || 'Anonymous';
             console.log(`[Blackjack] 🎲 Deal called by user "${username}" with bet=${currentBet}`);
@@ -1297,7 +1135,6 @@
                 showNotification(`Error: ${error.message}`, 'error');
                 gameState = 'waiting';
                 updateActionButtons();
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             }
         }
         
@@ -1308,18 +1145,11 @@
                 addCardToHand('player', playerCards[i]);
             }
             
-<<<<<<< HEAD
-            // Deal dealer cards (second card face down)
-            for (let i = 0; i < dealerCards.length; i++) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-                if (i === 1) {
-=======
             // Deal dealer cards (second card face down if game is still playing)
             for (let i = 0; i < dealerCards.length; i++) {
                 await new Promise(resolve => setTimeout(resolve, 500));
                 // Hide second dealer card if game is still in progress
                 if (i === 1 && currentGameState && currentGameState.gameStatus === 'playing') {
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     addCardToHand('dealer', { suit: 'hidden', rank: 'hidden' }, true);
                 } else {
                     addCardToHand('dealer', dealerCards[i]);
@@ -1388,12 +1218,6 @@
             return cardDiv;
         }
         
-<<<<<<< HEAD
-        function calculateScore(hand) {
-            let score = 0;
-            let aces = 0;
-            
-=======
         // Score calculation removed - backend handles all scoring
         // This function is kept for compatibility but should not be used for game logic
         function calculateScore(hand) {
@@ -1404,7 +1228,6 @@
             
             if (!hand || hand.length === 0) return 0;
             
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             for (let card of hand) {
                 if (card.rank === 1) {
                     aces++;
@@ -1426,144 +1249,6 @@
         }
         
         async function playerHit() {
-<<<<<<< HEAD
-            if (gameState !== 'playing') return;
-            
-            // Draw new card
-            const newCard = drawCard();
-            playerHand.push(newCard);
-            
-            // Add card with animation
-            await new Promise(resolve => setTimeout(resolve, 300));
-            addCardToHand('player', newCard);
-            
-            const playerScore = calculateScore(playerHand);
-            updateScores(playerScore, null);
-            
-            console.log('Player score after hit:', playerScore);
-            
-            if (playerScore > 21) {
-                console.log('Player busted!');
-                gameState = 'finished';
-                updateGameStatus('💥 BUST! You went over 21!');
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                handleGameEnd('bust', 'You lose! Bust over 21.', 0);
-            } else if (playerScore === 21) {
-                // Auto-stand on 21
-                updateGameStatus('Perfect 21! Standing automatically...');
-                setTimeout(() => playerStand(), 1000);
-            } else {
-                updateGameStatus('Hit or stand?');
-                updateStrategyHint();
-            }
-            
-            updateActionButtons();
-        }
-        
-        async function playerStand() {
-            if (gameState !== 'playing') return;
-            
-            gameState = 'dealer_turn';
-            updateGameStatus('Dealer\'s turn...');
-            updateActionButtons();
-            
-            // Reveal dealer's hidden card
-            await revealDealerCard();
-            
-            const playerScore = calculateScore(playerHand);
-            let dealerScore = calculateScore(dealerHand);
-            
-            updateScores(playerScore, dealerScore);
-            
-            // Intelligent dealer AI - tries to beat player if they're close to 21
-            let shouldHit = dealerScore < 17;
-            
-            // If player has a strong hand (18-20), dealer is more aggressive
-            if (playerScore >= 18 && playerScore <= 20) {
-                shouldHit = dealerScore < 18;
-                if (playerScore === 20) {
-                    shouldHit = dealerScore < 19; // Even more aggressive against 20
-                }
-            }
-            
-            // Dealer plays their hand
-            while (shouldHit && dealerScore <= 21) {
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                const newCard = drawCard();
-                dealerHand.push(newCard);
-                addCardToHand('dealer', newCard);
-                
-                dealerScore = calculateScore(dealerHand);
-                updateScores(playerScore, dealerScore);
-                
-                updateGameStatus(`Dealer draws... Score: ${dealerScore}`);
-                
-                // Update hit condition with intelligent AI
-                if (playerScore >= 18 && playerScore <= 20) {
-                    shouldHit = dealerScore < playerScore && dealerScore < 21;
-                } else {
-                    shouldHit = dealerScore < 17;
-                }
-            }
-            
-            // Determine winner with cheat boost
-            gameState = 'finished';
-            let finalResult, finalPayout = 0;
-            
-            if (dealerScore > 21) {
-                finalResult = 'win';
-                finalPayout = currentBet * 2;
-            } else if (dealerScore > playerScore) {
-                finalResult = 'lose';
-                finalPayout = 0;
-            } else if (dealerScore < playerScore) {
-                finalResult = 'win';
-                finalPayout = currentBet * 2;
-            } else {
-                finalResult = 'push';
-                finalPayout = currentBet;
-            }
-            
-            // Apply cheat boost if active and losing
-            if (cheatState.active && finalResult === 'lose') {
-                const cheat = cheatMethods[cheatState.active];
-                if (Math.random() * 100 < cheat.winBoost) {
-                    finalResult = 'win';
-                    finalPayout = currentBet * 2;
-                    
-                    // Show cheat activation message
-                    const cheatMsg = document.createElement('div');
-                    cheatMsg.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 text-2xl font-bold text-red-400 z-50 animate-pulse';
-                    cheatMsg.textContent = `🎯 ${cheat.name} Activated!`;
-                    document.body.appendChild(cheatMsg);
-                    setTimeout(() => cheatMsg.remove(), 3000);
-                }
-            }
-            
-            // Handle game end
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            console.log('🏁 DEALER TURN COMPLETE');
-            console.log('   Player Score:', playerScore);
-            console.log('   Dealer Score:', dealerScore);
-            console.log('   Final Result:', finalResult);
-            console.log('   Final Payout:', finalPayout);
-            console.log('   Current Game State:', gameState);
-            
-            console.log('🎯 CALLING handleGameEnd...');
-            
-            if (finalResult === 'win') {
-                const message = dealerScore > 21 ? 'Dealer busts! You win!' : 'You win!';
-                console.log('   Calling WIN scenario:', message);
-                handleGameEnd('win', message, finalPayout);
-            } else if (finalResult === 'push') {
-                console.log('   Calling PUSH scenario');
-                handleGameEnd('push', 'Push! Tie game.', finalPayout);
-            } else {
-                console.log('   Calling LOSE scenario');
-                handleGameEnd('lose', 'Dealer wins.', finalPayout);
-=======
             if (gameState !== 'playing') {
                 console.log('Cannot hit: game not in playing state');
                 showNotification('No active hand. Please deal cards first.', 'error');
@@ -1791,16 +1476,10 @@
                     }
                 }
                 updateActionButtons();
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             }
         }
         
         async function playerDouble() {
-<<<<<<< HEAD
-            if (gameState !== 'playing' || playerHand.length !== 2) return;
-            
-            const currentBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
-=======
             if (gameState !== 'playing') {
                 console.log('Cannot double: game not in playing state. Current state:', gameState);
                 showNotification('No active hand. Please deal cards first.', 'error');
@@ -1832,41 +1511,11 @@
             const username = localStorage.getItem('vegas.username') || localStorage.getItem('vegasUser') || 'Anonymous';
             const currentBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             if (currentBalance < currentBet) {
                 showNotification('Insufficient balance to double!', 'error');
                 return;
             }
             
-<<<<<<< HEAD
-            // Deduct additional bet amount
-            const newBalance = currentBalance - currentBet;
-            localStorage.setItem('vegasBalance', String(newBalance));
-            document.getElementById('balanceDisplay').textContent = `$${newBalance}`;
-            
-            // Double the bet
-            currentBet *= 2;
-            document.getElementById('currentBet').textContent = `$${currentBet}`;
-            
-            // Draw one card
-            const newCard = drawCard();
-            playerHand.push(newCard);
-            
-            // Add card with animation
-            await new Promise(resolve => setTimeout(resolve, 500));
-            addCardToHand('player', newCard);
-            
-            const playerScore = calculateScore(playerHand);
-            updateScores(playerScore, null);
-            
-            if (playerScore > 21) {
-                gameState = 'finished';
-                handleGameEnd('bust', 'Bust! You lose.', 0);
-            } else {
-                // Auto-stand after double
-                updateGameStatus('Doubled down! Standing automatically...');
-                setTimeout(() => playerStand(), 1000);
-=======
             // Disable button immediately to prevent double-clicks
             const doubleButton = document.getElementById('doubleButton');
             if (doubleButton) {
@@ -2034,7 +1683,6 @@
                     // Re-enable buttons on error
                     updateActionButtons();
                 }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             }
         }
         
@@ -2379,17 +2027,12 @@
                 case 'playing':
                     hitButton.disabled = false;
                     standButton.disabled = false;
-<<<<<<< HEAD
-                    doubleButton.disabled = playerHand.length !== 2 || 
-                        parseInt(localStorage.getItem('vegasBalance') || '0') < currentBet;
-=======
                     // Check playerHand length from variable, or fallback to DOM count
                     const playerCardsEl = document.getElementById('playerCards');
                     const playerCardCount = playerHand.length || (playerCardsEl ? playerCardsEl.children.length : 0);
                     const currentBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
                     // Double down is only allowed with exactly 2 cards and sufficient balance
                     doubleButton.disabled = playerCardCount !== 2 || currentBalance < currentBet;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     break;
                     
                 case 'dealer_turn':
@@ -2456,30 +2099,7 @@
             hintElement.textContent = hint || 'Analyze the situation carefully...';
         }
         
-<<<<<<< HEAD
-        function calculateScore(hand) {
-            let score = 0;
-            let aces = 0;
-            
-            for (let card of hand) {
-                if (card.rank === 1) {
-                    aces++;
-                    score += 11;
-                } else {
-                    score += Math.min(card.rank, 10);
-                }
-            }
-            
-            while (score > 21 && aces > 0) {
-                score -= 10;
-                aces--;
-            }
-            
-            return score;
-        }
-=======
         // Duplicate calculateScore removed - backend handles all scoring
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         
         async function addFunds() {
             const username = localStorage.getItem('vegas.username') || localStorage.getItem('vegasUser') || 'Anonymous';
@@ -2555,13 +2175,8 @@
             }
             updateBalanceDisplay();
             
-<<<<<<< HEAD
-            // Initialize deck
-            createDeck();
-=======
             // Deck is managed by backend - no need to initialize on frontend
             // createDeck(); // Removed - backend handles deck state
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
             
             updateActionButtons();
             updateStrategyHint();
@@ -2614,14 +2229,8 @@
         });
         
         // Socket event handlers
-<<<<<<< HEAD
-        socket.on('connect', () => {
-            console.log('🔌 Connected to blackjack game');
-        });
-=======
         // Socket.IO removed - using HTTP/gRPC architecture instead
         // Socket event handlers no longer needed
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     </script>
 </body>
 </html>

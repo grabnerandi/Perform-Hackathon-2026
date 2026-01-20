@@ -9,11 +9,7 @@ const path = require('path');
 const { createService } = require('./common/service-runner');
 const { trace, context, propagation } = require('@opentelemetry/api');
 const { initializeOpenFeature, getFeatureFlag } = require('./common/openfeature');
-<<<<<<< HEAD
-const { initializeRedis, set, get } = require('./common/redis');
-=======
 const { initializeRedis, set, get, del } = require('./common/redis');
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 const { recordGameResult, recordScore } = require('./common/scoring');
 const Logger = require('./common/logger');
 
@@ -65,33 +61,6 @@ function extractMetadata(metadata) {
   return carrier;
 }
 
-<<<<<<< HEAD
-// Game logic from slots-service.js
-function calculateWin(result, betAmount) {
-  const symbols = ['🍒', '🍋', '🍊', '🔔', '⭐', '💎', '7️⃣'];
-  const winMultipliers = {
-    '7️⃣7️⃣7️⃣': 100,
-    '💎💎💎': 50,
-    '⭐⭐⭐': 25,
-    '🔔🔔🔔': 10,
-    '🍒🍒🍒': 5,
-    '🍋🍋🍋': 3,
-    '🍊🍊🍊': 2
-  };
-
-  const resultStr = result.join('');
-  const multiplier = winMultipliers[resultStr] || 0;
-  const winAmount = multiplier > 0 ? betAmount * multiplier : 0;
-  const win = multiplier > 0;
-
-  let winType = 'none';
-  if (multiplier >= 100) winType = 'jackpot';
-  else if (multiplier >= 25) winType = 'big-win';
-  else if (multiplier >= 5) winType = 'win';
-  else if (result[0] === result[1] || result[1] === result[2]) winType = 'near-miss';
-
-  return { win, winAmount, multiplier, winType };
-=======
 // Redis key prefix for game state
 const GAME_STATE_KEY_PREFIX = 'slots:game:';
 const GAME_STATE_TTL = 3600; // 1 hour
@@ -223,7 +192,6 @@ function getDoubleName(icon) {
     'shield': 'Security Alliance!'
   };
   return names[icon] || 'Double Match!';
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 }
 
 // gRPC Service Implementation
@@ -299,24 +267,6 @@ class SlotsServiceImpl {
       return callback({ code: grpc.status.INVALID_ARGUMENT, message: `Bet amount must be between ${minBet} and ${maxBet}` });
     }
 
-<<<<<<< HEAD
-    const symbols = ['🍒', '🍋', '🍊', '🔔', '⭐', '💎', '7️⃣'];
-    let result = [
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)]
-    ];
-
-    let cheatBoosted = false;
-    if (cheatActive && cheatType === 'symbolControl') {
-      if (Math.random() < 0.3) {
-        cheatBoosted = true;
-        result = ['7️⃣', '7️⃣', '7️⃣'];
-      }
-    }
-
-    const { win, winAmount, multiplier, winType } = calculateWin(result, betAmount);
-=======
     // Check house advantage feature flag
     const houseAdvantageEnabled = await getFeatureFlag('casino.house-advantage', false);
     
@@ -386,7 +336,6 @@ class SlotsServiceImpl {
         console.log(`[Slots] 🏠 House advantage applied: win converted to loss`);
       }
     }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     // Log game end
     logger.logGameEnd('slots', Username, winType, winAmount, win, {
@@ -397,21 +346,11 @@ class SlotsServiceImpl {
     });
 
     // Store game state in Redis
-<<<<<<< HEAD
-    const gameStateKey = `slots:${Username}:state`;
-    await set(gameStateKey, JSON.stringify({
-=======
     const gameState = {
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       lastSpin: new Date().toISOString(),
       lastResult: result,
       lastWin: win,
       lastWinAmount: winAmount,
-<<<<<<< HEAD
-    }), 3600); // Expire after 1 hour
-
-    // Record game result in scoring service (async, don't block response)
-=======
       betAmount: betAmount,
       multiplier: multiplier,
       winType: winType,
@@ -423,18 +362,13 @@ class SlotsServiceImpl {
     await saveGameState(Username, gameState);
 
     // Record game result in scoring service for ALL games (wins and losses) to track total bets
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     recordGameResult({
       username: Username,
       game: 'slots',
       action: 'spin',
       betAmount: betAmount,
       payout: winAmount,
-<<<<<<< HEAD
-      win: win,
-=======
       win: win && winAmount > 0,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       result: win ? 'win' : 'lose',
       gameData: {
         result: result,
@@ -465,11 +399,7 @@ class SlotsServiceImpl {
       bet_amount: betAmount,
       multiplier: multiplier,
       win_type: winType,
-<<<<<<< HEAD
-      description: win ? `You won ${winAmount}!` : 'Better luck next time!',
-=======
       description: description || (win ? `You won ${winAmount}!` : 'Better luck next time!'),
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       timestamp: new Date().toISOString(),
       cheat_active: cheatActive,
       cheat_type: cheatType,

@@ -147,17 +147,11 @@ function enterCasino(casinoUrl, userData) {
  */
 function depositFunds(casinoUrl, cookies, userData) {
   const url = `${casinoUrl}/api/user/topup`;
-<<<<<<< HEAD
-  const payload = JSON.stringify({
-    Username: userData.username,
-    Amount: 1000,
-=======
   // Ensure deposit amount is > 0
   const depositAmount = Math.max(100, 1000); // Minimum 100, default 1000
   const payload = JSON.stringify({
     Username: userData.username,
     Amount: depositAmount,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   });
 
   const params = {
@@ -197,16 +191,6 @@ function depositFunds(casinoUrl, cookies, userData) {
  */
 function playGame(casinoUrl, cookies, userData, gameName) {
   let url, payload, method;
-<<<<<<< HEAD
-
-  switch (gameName) {
-    case 'slots':
-      // Use legacy endpoint /api/slots/spin or new /api/games/slots/spin
-      url = `${casinoUrl}/api/slots/spin`;
-      payload = JSON.stringify({
-        Username: userData.username,
-        BetAmount: 50,
-=======
   
   // Ensure bet amounts are always > 0 (minimum 10)
   const minBet = 10;
@@ -220,7 +204,6 @@ function playGame(casinoUrl, cookies, userData, gameName) {
       payload = JSON.stringify({
         Username: userData.username,
         BetAmount: getBetAmount(50), // Ensure bet is always > 0 (minimum 10)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         CheatActive: true, // Enable feature flag
         CheatType: 'symbolControl',
       });
@@ -228,20 +211,12 @@ function playGame(casinoUrl, cookies, userData, gameName) {
       break;
 
     case 'roulette':
-<<<<<<< HEAD
-      // Use new endpoint /api/games/roulette/spin
-      url = `${casinoUrl}/api/games/roulette/spin`;
-      payload = JSON.stringify({
-        Username: userData.username,
-        BetAmount: 100,
-=======
       // Use HTTP endpoint - frontend service uses gRPC internally to call roulette service
       // Architecture: Browser → HTTP → Frontend Service → gRPC → Roulette Service
       url = `${casinoUrl}/api/games/roulette/spin`;
       payload = JSON.stringify({
         Username: userData.username,
         BetAmount: getBetAmount(100), // Ensure bet is always > 0 (minimum 10)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         BetType: 'red',
         CheatActive: true, // Enable feature flag
         CheatType: 'ballControl',
@@ -250,40 +225,24 @@ function playGame(casinoUrl, cookies, userData, gameName) {
       break;
 
     case 'dice':
-<<<<<<< HEAD
-      // Use legacy endpoint /api/dice/roll or new /api/games/dice/roll
-      url = `${casinoUrl}/api/dice/roll`;
-      payload = JSON.stringify({
-        Username: userData.username,
-        BetAmount: 75,
-=======
       // Use HTTP endpoint - frontend service uses gRPC internally to call dice service
       // Architecture: Browser → HTTP → Frontend Service → gRPC → Dice Service
       url = `${casinoUrl}/api/dice/roll`;
       payload = JSON.stringify({
         Username: userData.username,
         BetAmount: getBetAmount(75), // Ensure bet is always > 0 (minimum 10)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         BetType: 'pass',
       });
       method = 'POST';
       break;
 
     case 'blackjack':
-<<<<<<< HEAD
-      // Use new endpoint /api/games/blackjack/deal
-      url = `${casinoUrl}/api/games/blackjack/deal`;
-      payload = JSON.stringify({
-        Username: userData.username,
-        BetAmount: 80,
-=======
       // Use HTTP endpoint - frontend service uses gRPC internally to call blackjack service
       // Architecture: Browser → HTTP → Frontend Service → gRPC → Blackjack Service
       url = `${casinoUrl}/api/games/blackjack/deal`;
       payload = JSON.stringify({
         Username: userData.username,
         BetAmount: getBetAmount(80), // Ensure bet is always > 0 (minimum 10)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       });
       method = 'POST';
       break;
@@ -306,20 +265,15 @@ function playGame(casinoUrl, cookies, userData, gameName) {
     'game response valid': (r) => {
       try {
         const body = JSON.parse(r.body);
-<<<<<<< HEAD
-=======
         // For blackjack, check for response format (can be snake_case from gRPC or camelCase)
         if (gameName === 'blackjack') {
           return body !== null && (body.player_hand !== undefined || body.playerHand !== undefined || body.player_score !== undefined || body.playerScore !== undefined);
         }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         return body !== null;
       } catch {
         return false;
       }
     },
-<<<<<<< HEAD
-=======
     'bet amount valid': (r) => {
       try {
         const body = JSON.parse(r.body);
@@ -336,7 +290,6 @@ function playGame(casinoUrl, cookies, userData, gameName) {
         return true; // If parsing fails, don't fail this check
       }
     },
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   });
 
   if (success) {

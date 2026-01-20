@@ -20,6 +20,8 @@ spec:
         app.kubernetes.io/name: {{ include "vegas-casino.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: postgresql
+      annotations:
+        dt.owner: 'vegas-casino-app'
     spec:
       {{- with .Values.podSecurityContext }}
       securityContext:
@@ -83,9 +85,6 @@ spec:
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)

@@ -8,12 +8,8 @@ const { getNodeAutoInstrumentations } = require('@opentelemetry/auto-instrumenta
 const { Resource } = require('@opentelemetry/resources');
 const { SemanticResourceAttributes } = require('@opentelemetry/semantic-conventions');
 const { OTLPTraceExporter } = require('@opentelemetry/exporter-otlp-grpc');
-<<<<<<< HEAD
-const { trace } = require('@opentelemetry/api');
-=======
 const { trace, propagation } = require('@opentelemetry/api');
 const { W3CTraceContextPropagator } = require('@opentelemetry/core');
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
 // Initialize OpenTelemetry SDK
 function initializeTelemetry(serviceName, serviceMetadata = {}) {
@@ -76,10 +72,6 @@ function initializeTelemetry(serviceName, serviceMetadata = {}) {
     ],
   });
 
-<<<<<<< HEAD
-  sdk.start();
-  console.log(`[OpenTelemetry] Initialized for service: ${serviceName}`);
-=======
   // Configure W3C TraceContext propagator for trace context propagation
   propagation.setGlobalPropagator(new W3CTraceContextPropagator());
 
@@ -135,7 +127,6 @@ function initializeTelemetry(serviceName, serviceMetadata = {}) {
 
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
   return trace.getTracer(serviceName);
 }

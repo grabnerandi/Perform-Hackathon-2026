@@ -58,10 +58,6 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 
 const blackjackProto = grpc.loadPackageDefinition(packageDefinition).blackjack;
 
-<<<<<<< HEAD
-// Game state management
-const games = new Map();
-=======
 // Redis key prefix for game state
 const GAME_STATE_KEY_PREFIX = 'blackjack:game:';
 const GAME_STATE_TTL = 3600; // 1 hour
@@ -91,7 +87,6 @@ async function deleteGameState(username) {
   const key = `${GAME_STATE_KEY_PREFIX}${username}`;
   return await del(key);
 }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
 function drawCard() {
   const rank = Math.floor(Math.random() * 13) + 1;
@@ -120,8 +115,6 @@ function scoreHand(hand) {
   return score;
 }
 
-<<<<<<< HEAD
-=======
 // Determine game result and payout
 async function determineGameResult(playerScore, dealerScore, betAmount) {
   let result = 'lose';
@@ -163,7 +156,6 @@ async function determineGameResult(playerScore, dealerScore, betAmount) {
   return { result, payout };
 }
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 // gRPC Service Implementation
 class BlackjackServiceImpl {
   async Health(call, callback) {
@@ -217,21 +209,6 @@ class BlackjackServiceImpl {
 
     const playerHand = [drawCard(), drawCard()];
     const dealerHand = [drawCard(), drawCard()];
-<<<<<<< HEAD
-    games.set(Username, { playerHand, dealerHand, betAmount });
-
-    // Store game state in Redis
-    const gameStateKey = `blackjack:${Username}:state`;
-    await set(gameStateKey, JSON.stringify({
-      playerHand,
-      dealerHand,
-      betAmount,
-      timestamp: new Date().toISOString(),
-    }), 3600); // Expire after 1 hour
-
-    const playerScore = scoreHand(playerHand);
-    const dealerScore = scoreHand(playerHand) >= 21 ? scoreHand(dealerHand) : scoreHand([dealerHand[0]]);
-=======
     
     // Store game state in Redis (primary source of truth)
     const gameState = {
@@ -303,15 +280,11 @@ class BlackjackServiceImpl {
         },
       }).catch(err => console.warn('Failed to record game result:', err));
     }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     span.setAttributes({
       'game.player_score': playerScore,
       'game.dealer_score': dealerScore,
-<<<<<<< HEAD
-=======
       'game.natural_blackjack': isNaturalBlackjack,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     });
     span.end();
 
@@ -321,12 +294,9 @@ class BlackjackServiceImpl {
       player_score: playerScore,
       dealer_score: dealerScore,
       bet_amount: betAmount,
-<<<<<<< HEAD
-=======
       game_status: gameState.gameStatus,
       result: gameState.result || null,
       payout: gameState.payout || null,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       timestamp: new Date().toISOString()
     });
   }
@@ -342,15 +312,6 @@ class BlackjackServiceImpl {
     
     const { username } = call.request;
     const Username = username || 'Anonymous';
-<<<<<<< HEAD
-    const g = games.get(Username);
-
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'No active hand' });
-    }
-=======
     
     // Load game state from Redis
     const gameState = await getGameState(Username);
@@ -383,29 +344,10 @@ class BlackjackServiceImpl {
     }
     
     console.log(`[Blackjack] ✅ Hit validated for user ${Username}. Status: ${gameState.gameStatus}, Player cards: ${gameState.playerHand.length}`);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     // Log game action
     logger.logGameAction('hit', 'blackjack', {
       username: Username,
-<<<<<<< HEAD
-      bet_amount: g.betAmount
-    });
-
-    const newCard = drawCard();
-    g.playerHand.push(newCard);
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand([g.dealerHand[0]]);
-
-    // Update game state in Redis
-    const gameStateKey = `blackjack:${Username}:state`;
-    await set(gameStateKey, JSON.stringify({
-      playerHand: g.playerHand,
-      dealerHand: g.dealerHand,
-      betAmount: g.betAmount,
-      timestamp: new Date().toISOString(),
-    }), 3600);
-=======
       bet_amount: gameState.betAmount
     });
 
@@ -430,32 +372,23 @@ class BlackjackServiceImpl {
 
     // Update game state in Redis
     await saveGameState(Username, gameState);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     span.setAttributes({
       'game.action': 'hit',
       'game.player_score': playerScore,
       'game.dealer_score': dealerScore,
-<<<<<<< HEAD
-=======
       'game.busted': playerScore > 21,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     });
     span.end();
 
     callback(null, {
       new_card: { rank: newCard.rank, suit: newCard.suit },
-<<<<<<< HEAD
-      player_score: playerScore,
-      dealer_score: dealerScore,
-=======
       player_hand: gameState.playerHand.map(c => ({ rank: c.rank, suit: c.suit })),
       player_score: playerScore,
       dealer_score: dealerScore,
       game_status: gameState.gameStatus,
       result: gameState.result || null,
       payout: gameState.payout || null,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       timestamp: new Date().toISOString()
     });
   }
@@ -471,30 +404,6 @@ class BlackjackServiceImpl {
     
     const { username } = call.request;
     const Username = username || 'Anonymous';
-<<<<<<< HEAD
-    const g = games.get(Username);
-
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'No active hand' });
-    }
-
-    while (scoreHand(g.dealerHand) < 17) {
-      g.dealerHand.push(drawCard());
-    }
-
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand(g.dealerHand);
-    let result = 'lose';
-    if (playerScore > 21) result = 'lose';
-    else if (dealerScore > 21 || playerScore > dealerScore) result = 'win';
-    else if (playerScore === dealerScore) result = 'push';
-
-    let payout = 0;
-    if (result === 'win') payout = g.betAmount * 2;
-    else if (result === 'push') payout = g.betAmount;
-=======
     
     console.log(`[Blackjack] 📖 Stand called for user "${Username}", attempting to load game state with key: ${GAME_STATE_KEY_PREFIX}${Username}`);
     
@@ -611,45 +520,27 @@ class BlackjackServiceImpl {
     gameState.payout = payout;
     gameState.playerScore = playerScore;
     gameState.dealerScore = dealerScore;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     // Log game end
     logger.logGameEnd('blackjack', Username, result, payout, result === 'win', {
       action: 'stand',
-<<<<<<< HEAD
-      bet_amount: g.betAmount,
-=======
       bet_amount: gameState.betAmount,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       player_score: playerScore,
       dealer_score: dealerScore
     });
 
-<<<<<<< HEAD
-    // Record game result in scoring service (async, don't block response)
-=======
     // Record game result in scoring service for ALL games (wins and losses) to track total bets
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     recordGameResult({
       username: Username,
       game: 'blackjack',
       action: 'stand',
-<<<<<<< HEAD
-      betAmount: g.betAmount,
-=======
       betAmount: gameState.betAmount,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       payout: payout,
       win: result === 'win',
       result: result,
       gameData: {
-<<<<<<< HEAD
-        playerHand: g.playerHand,
-        dealerHand: g.dealerHand,
-=======
         playerHand: gameState.playerHand,
         dealerHand: gameState.dealerHand,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         playerScore: playerScore,
         dealerScore: dealerScore,
       },
@@ -658,11 +549,6 @@ class BlackjackServiceImpl {
       },
     }).catch(err => console.warn('Failed to record game result:', err));
 
-<<<<<<< HEAD
-    // Remove game state from Redis
-    const gameStateKey = `blackjack:${Username}:state`;
-    await del(gameStateKey);
-=======
     // Save final state immediately so frontend can fetch it if needed
     await saveGameState(Username, gameState);
     console.log(`[Blackjack] ✅ Stand completed for user ${Username}. Result: ${result}, Payout: ${payout}, Game status: ${gameState.gameStatus}`);
@@ -673,7 +559,6 @@ class BlackjackServiceImpl {
       deleteGameState(Username).catch(err => console.warn('Failed to delete game state:', err));
       console.log(`[Blackjack] 🗑️ Game state deleted for user ${Username} after stand completion`);
     }, 30 * 1000); // Reduced from 5 minutes to 30 seconds to prevent stale state issues
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     span.setAttributes({
       'game.action': 'stand',
@@ -684,20 +569,11 @@ class BlackjackServiceImpl {
     });
     span.end();
 
-<<<<<<< HEAD
-    const dealerFinalHand = g.dealerHand;
-    games.delete(Username);
-
-    callback(null, {
-      dealer_final_hand: dealerFinalHand.map(c => ({ rank: c.rank, suit: c.suit })),
-      dealer_score: dealerScore,
-=======
     callback(null, {
       dealer_final_hand: gameState.dealerHand.map(c => ({ rank: c.rank, suit: c.suit })),
       player_hand: gameState.playerHand.map(c => ({ rank: c.rank, suit: c.suit })),
       dealer_score: dealerScore,
       player_score: playerScore,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       result: result,
       payout: payout,
       timestamp: new Date().toISOString()
@@ -715,15 +591,6 @@ class BlackjackServiceImpl {
     
     const { username } = call.request;
     const Username = username || 'Anonymous';
-<<<<<<< HEAD
-    const g = games.get(Username);
-
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return callback({ code: grpc.status.INVALID_ARGUMENT, message: 'No active hand' });
-    }
-=======
     
     // Load game state from Redis
     const gameState = await getGameState(Username);
@@ -757,7 +624,6 @@ class BlackjackServiceImpl {
     }
     
     console.log(`[Blackjack] ✅ Double validated for user ${Username}. Status: ${gameState.gameStatus}, Player cards: ${gameState.playerHand.length}`);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
     // Check if double-down feature is enabled
     const doubleDownEnabled = await getFeatureFlag('blackjack.double-down', true);
@@ -770,16 +636,6 @@ class BlackjackServiceImpl {
     }
 
     // Log bet change (double down)
-<<<<<<< HEAD
-    logger.logBetChange('blackjack', Username, g.betAmount, g.betAmount * 2, 'double_down');
-
-    const newCard = drawCard();
-    g.playerHand.push(newCard);
-    const additionalBet = g.betAmount;
-    g.betAmount *= 2;
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand([g.dealerHand[0]]);
-=======
     const additionalBet = gameState.betAmount;
     logger.logBetChange('blackjack', Username, gameState.betAmount, gameState.betAmount * 2, 'double_down');
 
@@ -817,17 +673,10 @@ class BlackjackServiceImpl {
         gameState.playerScore = playerScore;
         gameState.dealerScore = finalDealerScore;
       }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     
     // Log game action
     logger.logGameAction('double', 'blackjack', {
       username: Username,
-<<<<<<< HEAD
-      bet_amount: g.betAmount,
-      additional_bet: additionalBet
-    });
-
-=======
       bet_amount: gameState.betAmount,
       additional_bet: additionalBet
     });
@@ -860,27 +709,18 @@ class BlackjackServiceImpl {
       deleteGameState(Username).catch(err => console.warn('Failed to delete game state:', err));
     }, 5 * 60 * 1000);
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     span.setAttributes({
       'game.action': 'double',
       'game.additional_bet': additionalBet,
       'game.player_score': playerScore,
       'game.dealer_score': dealerScore,
-<<<<<<< HEAD
-=======
       'game.result': gameState.result || null,
       'game.payout': gameState.payout || null,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     });
     span.end();
 
     callback(null, {
       new_card: { rank: newCard.rank, suit: newCard.suit },
-<<<<<<< HEAD
-      player_score: playerScore,
-      dealer_score: dealerScore,
-      additional_bet: additionalBet,
-=======
       player_hand: gameState.playerHand.map(c => ({ rank: c.rank, suit: c.suit })),
       dealer_final_hand: gameState.dealerHand.map(c => ({ rank: c.rank, suit: c.suit })),
       player_score: playerScore,
@@ -889,7 +729,6 @@ class BlackjackServiceImpl {
       game_status: gameState.gameStatus,
       result: gameState.result || null,
       payout: gameState.payout || null,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       timestamp: new Date().toISOString()
     });
   }
@@ -1165,103 +1004,6 @@ const blackjackMetadata = {
 };
 
 createService(process.env.SERVICE_NAME || 'vegas-blackjack-service', (app) => {
-<<<<<<< HEAD
-  app.post('/deal', (req, res) => {
-    const tracer = trace.getTracer('vegas-blackjack-service');
-    const span = tracer.startSpan('blackjack_deal');
-    
-    const p = req.body || {};
-    const betAmount = Number(p.BetAmount || 10);
-    const Username = p.Username || 'Anonymous';
-    const playerHand = [drawCard(), drawCard()];
-    const dealerHand = [drawCard(), drawCard()];
-    games.set(Username, { playerHand, dealerHand, betAmount });
-
-    span.setAttributes({
-      'game.action': 'deal',
-      'game.bet_amount': betAmount,
-      'game.player_score': scoreHand(playerHand),
-      'game.dealer_score': scoreHand(playerHand) >= 21 ? scoreHand(dealerHand) : scoreHand([dealerHand[0]]),
-    });
-    span.end();
-
-    res.json({
-      playerHand,
-      dealerHand,
-      playerScore: scoreHand(playerHand),
-      dealerScore: scoreHand(playerHand) >= 21 ? scoreHand(dealerHand) : scoreHand([dealerHand[0]]),
-      betAmount,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  app.post('/hit', (req, res) => {
-    const tracer = trace.getTracer('vegas-blackjack-service');
-    const span = tracer.startSpan('blackjack_hit');
-    
-    const p = req.body || {};
-    const Username = p.Username || 'Anonymous';
-    const g = games.get(Username);
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return res.status(400).json({ error: 'No active hand' });
-    }
-    
-    const newCard = drawCard();
-    g.playerHand.push(newCard);
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand([g.dealerHand[0]]);
-    
-    span.setAttributes({
-      'game.action': 'hit',
-      'game.player_score': playerScore,
-      'game.dealer_score': dealerScore,
-    });
-    span.end();
-    
-    res.json({ newCard, playerScore, dealerScore, timestamp: new Date().toISOString() });
-  });
-
-  app.post('/stand', (req, res) => {
-    const tracer = trace.getTracer('vegas-blackjack-service');
-    const span = tracer.startSpan('blackjack_stand');
-    
-    const p = req.body || {};
-    const Username = p.Username || 'Anonymous';
-    const g = games.get(Username);
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return res.status(400).json({ error: 'No active hand' });
-    }
-    
-    while (scoreHand(g.dealerHand) < 17) {
-      g.dealerHand.push(drawCard());
-    }
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand(g.dealerHand);
-    let result = 'lose';
-    if (playerScore > 21) result = 'lose';
-    else if (dealerScore > 21 || playerScore > dealerScore) result = 'win';
-    else if (playerScore === dealerScore) result = 'push';
-    let payout = 0;
-    if (result === 'win') payout = g.betAmount * 2;
-    else if (result === 'push') payout = g.betAmount;
-    
-    span.setAttributes({
-      'game.action': 'stand',
-      'game.player_score': playerScore,
-      'game.dealer_score': dealerScore,
-      'game.result': result,
-      'game.payout': payout,
-    });
-    span.end();
-    
-    const dealerFinalHand = g.dealerHand;
-    games.delete(Username);
-    res.json({ dealerFinalHand, dealerScore, result, payout, timestamp: new Date().toISOString() });
-=======
   app.post('/deal', async (req, res) => {
     const tracer = trace.getTracer('vegas-blackjack-service');
     const span = tracer.startSpan('blackjack_deal');
@@ -1454,49 +1196,12 @@ createService(process.env.SERVICE_NAME || 'vegas-blackjack-service', (app) => {
       span.end();
       res.status(500).json({ error: error.message });
     }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   });
 
   app.post('/double', async (req, res) => {
     const tracer = trace.getTracer('vegas-blackjack-service');
     const span = tracer.startSpan('blackjack_double');
     
-<<<<<<< HEAD
-    const p = req.body || {};
-    const Username = p.Username || 'Anonymous';
-    const g = games.get(Username);
-    if (!g) {
-      span.setAttribute('http.status_code', 400);
-      span.end();
-      return res.status(400).json({ error: 'No active hand' });
-    }
-
-    // Check if double-down feature is enabled
-    const doubleDownEnabled = await getFeatureFlag('blackjack.double-down', true);
-    if (!doubleDownEnabled) {
-      span.setAttribute('http.status_code', 403);
-      span.setAttribute('feature_flag.blocked', true);
-      span.end();
-      return res.status(403).json({ error: 'Double-down feature is disabled' });
-    }
-    
-    const newCard = drawCard();
-    g.playerHand.push(newCard);
-    const additionalBet = g.betAmount;
-    g.betAmount *= 2;
-    const playerScore = scoreHand(g.playerHand);
-    const dealerScore = scoreHand([g.dealerHand[0]]);
-    
-    span.setAttributes({
-      'game.action': 'double',
-      'game.additional_bet': additionalBet,
-      'game.player_score': playerScore,
-      'game.dealer_score': dealerScore,
-    });
-    span.end();
-    
-    res.json({ newCard, playerScore, dealerScore, additionalBet, timestamp: new Date().toISOString() });
-=======
     try {
       const p = req.body || {};
       const Username = p.Username || 'Anonymous';
@@ -1581,7 +1286,6 @@ createService(process.env.SERVICE_NAME || 'vegas-blackjack-service', (app) => {
       span.end();
       res.status(500).json({ error: error.message });
     }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   });
 }, blackjackMetadata);
 

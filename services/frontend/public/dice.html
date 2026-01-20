@@ -32,18 +32,12 @@
     
     <!-- External libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-<<<<<<< HEAD
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-    
-=======
     <!-- Socket.IO removed - using HTTP/gRPC architecture instead -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- OpenTelemetry Browser Instrumentation -->
     <script src="/js/opentelemetry-browser.js"></script>
     
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     <style>
         /* Smartscape-inspired background matching lobby */
         .dice-bg {
@@ -861,13 +855,8 @@
     </main>
 
     <script>
-<<<<<<< HEAD
-    // Initialize Socket.IO
-    const socket = io();
-=======
     // Socket.IO removed - using HTTP/gRPC architecture instead
     // Backend handles all game logic, frontend only renders UI
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         
         // Check if user has the new required fields, if not populate with defaults
         function ensureUserProfileComplete() {
@@ -1295,96 +1284,8 @@
             `;
             
             try {
-<<<<<<< HEAD
-                // Apply cheat logic BEFORE rolling - increase probability of favorable outcomes
-                let cheatOverride = null;
-                if (cheatState.active) {
-                    const cheat = cheatMethods[cheatState.active];
-                    const cheatRoll = Math.random() * 100;
-                    
-                    console.log(`🎯 Pre-roll cheat check: ${cheat.name} (${cheat.winBoost}% boost for ${currentBet})`);
-                    console.log(`🎲 Cheat roll: ${cheatRoll.toFixed(1)}% vs ${cheat.winBoost}% threshold`);
-                    
-                    if (cheatRoll < cheat.winBoost) {
-                        console.log(`🚀 CHEAT ACTIVATED! Forcing favorable dice for ${currentBet}!`);
-                        
-                        // Generate winning dice combinations for the current bet
-                        switch (currentBet) {
-                            case 'pass':
-                                // Pass Line wins on 7 or 11
-                                const passWins = [[1,6], [2,5], [3,4], [4,3], [5,2], [6,1], [5,6], [6,5]]; // 7s and 11s
-                                const passChoice = passWins[Math.floor(Math.random() * passWins.length)];
-                                cheatOverride = { dice1: passChoice[0], dice2: passChoice[1] };
-                                break;
-                                
-                            case 'dont_pass':
-                                // Don't Pass wins on 2 or 3
-                                const dontPassWins = [[1,1], [1,2], [2,1]]; // 2s and 3s
-                                const dontPassChoice = dontPassWins[Math.floor(Math.random() * dontPassWins.length)];
-                                cheatOverride = { dice1: dontPassChoice[0], dice2: dontPassChoice[1] };
-                                break;
-                                
-                            case 'field':
-                                // Field wins on 2,3,4,9,10,11,12
-                                const fieldWins = [[1,1], [1,2], [2,1], [1,3], [2,2], [3,1], [3,6], [4,5], [5,4], [6,3], [4,6], [5,5], [6,4], [5,6], [6,5], [6,6]];
-                                const fieldChoice = fieldWins[Math.floor(Math.random() * fieldWins.length)];
-                                cheatOverride = { dice1: fieldChoice[0], dice2: fieldChoice[1] };
-                                break;
-                                
-                            case 'snake_eyes':
-                                // Snake Eyes wins on 1+1
-                                cheatOverride = { dice1: 1, dice2: 1 };
-                                break;
-                                
-                            case 'boxcars':
-                                // Boxcars wins on 6+6
-                                cheatOverride = { dice1: 6, dice2: 6 };
-                                break;
-                                
-                            case 'seven_out':
-                                // Seven Out wins on sum = 7
-                                const sevenWins = [[1,6], [2,5], [3,4], [4,3], [5,2], [6,1]];
-                                const sevenChoice = sevenWins[Math.floor(Math.random() * sevenWins.length)];
-                                cheatOverride = { dice1: sevenChoice[0], dice2: sevenChoice[1] };
-                                break;
-                        }
-                        
-                        if (cheatOverride) {
-                            console.log(`🎲 Cheat forcing dice to: ${cheatOverride.dice1} + ${cheatOverride.dice2} = ${cheatOverride.dice1 + cheatOverride.dice2}`);
-                            
-                            // Show enhanced visual cheat activation message
-                            const cheatMsg = document.createElement('div');
-                            cheatMsg.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50';
-                            const betName = currentBet.replace('_', ' ').toUpperCase();
-                            cheatMsg.innerHTML = `
-                                <div class="bg-gradient-to-r from-purple-900/95 to-purple-700/95 backdrop-blur-lg border-2 border-purple-400 rounded-xl p-6 shadow-2xl animate-bounce">
-                                    <div class="text-center">
-                                        <div class="text-4xl mb-2">🎯</div>
-                                        <div class="text-2xl font-bold text-purple-200 mb-1">${cheat.name}</div>
-                                        <div class="text-lg text-purple-300 mb-2">ACTIVATED!</div>
-                                        <div class="text-sm text-purple-100 bg-purple-800/50 rounded-lg px-3 py-1">
-                                            Forcing ${betName} Win!
-                                        </div>
-                                    </div>
-                                </div>
-                            `;
-                            document.body.appendChild(cheatMsg);
-                            
-                            // Fade out animation
-                            setTimeout(() => {
-                                cheatMsg.style.transition = 'opacity 1s ease-out';
-                                cheatMsg.style.opacity = '0';
-                                setTimeout(() => cheatMsg.remove(), 1000);
-                            }, 3000);
-                        }
-                    }
-                }
-                
-                // Make API call (server handles balance debit/credit and returns newBalance)
-=======
                 // Call backend via HTTP - frontend service uses gRPC internally
                 // Backend handles all game logic including dice rolling and win calculation
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 const response = await fetch('/api/dice/roll', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1413,20 +1314,9 @@
                         StatusCode: 0,
                         // game-specific
                         BetType: currentBet,
-<<<<<<< HEAD
-                        // cheat system
-                        CheatActive: cheatState.active !== null,
-                        CheatType: cheatState.active,
-                        CheatDetails: cheatState.active ? cheatMethods[cheatState.active] : null,
-                        // If cheat override was determined, send the calculated payout
-                        CheatPayout: cheatOverride ? (betAmount * (currentBet === 'snake_eyes' || currentBet === 'boxcars' ? 30 : currentBet === 'seven_out' ? 4 : 2)) : null,
-                        // Override dice if cheat is forcing specific values
-                        CheatOverride: cheatOverride
-=======
                         // cheat system (backend handles cheat logic)
                         CheatActive: cheatState.active !== null,
                         CheatType: cheatState.active
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     })
                 });
                 
@@ -1439,72 +1329,6 @@
                     throw new Error('Invalid server response - missing dice values');
                 }
                 
-<<<<<<< HEAD
-                // If cheat was activated, override the server's dice values
-                if (cheatOverride) {
-                    console.log(`🎲 Applying cheat override: ${cheatOverride.dice1} + ${cheatOverride.dice2}`);
-                    data.dice1 = cheatOverride.dice1;
-                    data.dice2 = cheatOverride.dice2;
-                    data.sum = cheatOverride.dice1 + cheatOverride.dice2;
-                    
-                    // Recalculate win status and payout with cheat dice values
-                    data.win = true; // Should always win with cheat
-                    switch (currentBet) {
-                        case 'pass':
-                            data.payout = betAmount * 2;
-                            break;
-                        case 'dont_pass':
-                            data.payout = betAmount * 2;
-                            break;
-                        case 'field':
-                            data.payout = betAmount * 2;
-                            break;
-                        case 'snake_eyes':
-                            data.payout = betAmount * 30;
-                            break;
-                        case 'boxcars':
-                            data.payout = betAmount * 30;
-                            break;
-                        case 'seven_out':
-                            data.payout = betAmount * 4;
-                            break;
-                        default:
-                            data.payout = betAmount * 2;
-                    }
-                    
-                    console.log(`💰 Cheat payout: $${data.payout} for ${currentBet}`);
-                }
-                
-                // Always prefer server balance - server is the source of truth
-                let pendingNewBalance = (typeof data.newBalance === 'number') ? data.newBalance : null;
-                
-                console.log(`⚖️ Balance source decision: server newBalance = ${data.newBalance}, cheat active = ${!!cheatOverride}`);
-                
-                // Only use local calculation if server doesn't provide newBalance (fallback)
-                if (pendingNewBalance === null) {
-                    console.log(`⚠️ Server didn't provide newBalance, using fallback calculation`);
-                    const currentDisplayBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
-                    if (cheatOverride && data.win) {
-                        pendingNewBalance = currentDisplayBalance + data.payout;
-                        console.log(`🎯 Cheat fallback: ${currentDisplayBalance} + ${data.payout} = ${pendingNewBalance}`);
-                    }
-                } else {
-                    console.log(`✅ Using server balance: ${pendingNewBalance}`);
-                }
-                
-                console.log(`🔍 Server response data:`, data);
-                console.log(`🔍 newBalance from server: ${data.newBalance}, final pendingNewBalance: ${pendingNewBalance}, cheatOverride: ${!!cheatOverride}`);
-                
-                // Wait for rolling animation
-                setTimeout(() => {
-                    // Stop rolling animation
-                    if (dice1) dice1.classList.remove('rolling');
-                    if (dice2) dice2.classList.remove('rolling');
-                    
-                    // Reset to flat position first
-                    const dice1Cube = dice1?.querySelector('.dice-cube');
-                    const dice2Cube = dice2?.querySelector('.dice-cube');
-=======
                 // Use server response directly - backend handles all game logic
                 // Extract values (handle both snake_case from gRPC and camelCase)
                 const dice1 = data.dice1 || data.Dice1;
@@ -1543,101 +1367,18 @@
                     // Reset to flat position first
                     const dice1Cube = dice1Element?.querySelector('.dice-cube');
                     const dice2Cube = dice2Element?.querySelector('.dice-cube');
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     if (dice1Cube) gsap.set(dice1Cube, { rotationX: 0, rotationY: 0, rotationZ: 0 });
                     if (dice2Cube) gsap.set(dice2Cube, { rotationX: 0, rotationY: 0, rotationZ: 0 });
                     
                     // Add settling bounce effect
-<<<<<<< HEAD
-                    if (dice1 && dice2) {
-                        gsap.to([dice1, dice2], {
-=======
                     if (dice1Element && dice2Element) {
                         gsap.to([dice1Element, dice2Element], {
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                             scale: 1,
                             duration: 0.3,
                             ease: "bounce.out"
                         });
                     }
                     
-<<<<<<< HEAD
-                    // Update dice faces to show correct values (flat landing)
-                    console.log(`🎲 Server returned: dice1=${data.dice1}, dice2=${data.dice2}, sum=${data.sum}`);
-                    console.log(`🎯 About to update dice faces...`);
-                    
-                    // Verify we have valid dice values
-                    if (!data.dice1 || !data.dice2 || data.dice1 < 1 || data.dice1 > 6 || data.dice2 < 1 || data.dice2 > 6) {
-                        console.error(`❌ Invalid dice values from server: ${data.dice1}, ${data.dice2}`);
-                        return;
-                    }
-                    
-                    updateDiceFace('dice1', data.dice1);
-                    updateDiceFace('dice2', data.dice2);
-                    
-                    // Update sum display
-                    document.getElementById('diceSum').textContent = data.sum;
-                    
-                    // Highlight sum in probability chart
-                    highlightSum(data.sum);
-                    
-                    // Verify dice match the payout logic
-                    console.log(`🎰 Payout evaluation: Bet=${currentBet}, Dice=${data.dice1}+${data.dice2}=${data.sum}, Win=${data.win}, Payout=$${data.payout}`);
-                    
-                    // Show result with payout details
-                    showResult(data, betAmount);
-                    updateGameStats(data, betAmount);
-                    // Emit Completed BizEvent
-                    try {
-                        const completedEvent = {
-                            Game: 'Vegas Dice',
-                            BetAmount: betAmount,
-                            Username: localStorage.getItem('vegas.username') || localStorage.getItem('vegasUser') || 'Anonymous',
-                            CustomerName: localStorage.getItem('vegas.customerName') || localStorage.getItem('vegas.username') || localStorage.getItem('vegasUser') || 'Anonymous',
-                            Email: localStorage.getItem('vegas.email') || '',
-                            CompanyName: localStorage.getItem('vegas.companyName') || '',
-                            Persona: localStorage.getItem('vegas.persona') || '',
-                            Booth: localStorage.getItem('vegas.booth') || '',
-                            OptIn: localStorage.getItem('vegas.optIn') === 'true',
-                            WinFlag: data.win ? 1 : 0,
-                            WinningAmount: data.payout || 0,
-                            LossAmount: data.win ? 0 : betAmount,
-                            Balance: parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g,'')) || 0,
-                            Timestamp: new Date().toISOString(),
-                            Action: 'RollCompleted',
-                            Device: 'Browser-UI',
-                            CorrelationId: data.correlationId || `sim_${Date.now()}`,
-                            ResultIcons: [String(data.dice1), String(data.dice2)],
-                            Status: 'Completed',
-                            ErrorType: null,
-                            ErrorMessage: null,
-                            StatusCode: 200,
-                            // game-specific data
-                            BetType: currentBet
-                        };
-                        fetch('/api/bizevent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(completedEvent) });
-                    } catch {}
-                    
-                    // Update balance - always use server newBalance if available
-                    if (pendingNewBalance !== null) {
-                        console.log(`💰 Using server balance: ${pendingNewBalance}`);
-                        localStorage.setItem('vegasBalance', String(pendingNewBalance));
-                        document.getElementById('balanceDisplay').textContent = `$${pendingNewBalance}`;
-                    } else {
-                        console.log(`⚠️ Server newBalance is null, using fallback calculation`);
-                        // Fallback: calculate balance locally if server doesn't provide newBalance
-                        // Use the current displayed balance (which already has bet deducted)
-                        const currentDisplayBalance = parseInt((document.getElementById('balanceDisplay').textContent || '0').replace(/[^0-9]/g, '')) || 0;
-                        // If win: current balance + payout (payout already includes the bet amount in most cases)
-                        // If loss: current balance stays the same (bet already deducted)
-                        const newBalance = data.win ? currentDisplayBalance + data.payout : currentDisplayBalance;
-                        localStorage.setItem('vegasBalance', String(newBalance));
-                        document.getElementById('balanceDisplay').textContent = `$${newBalance}`;
-                        console.log(`💰 Fallback balance update: ${currentDisplayBalance} -> ${newBalance} (win: ${data.win}, payout: ${data.payout}, bet: ${betAmount})`);
-                    }
-                    // Show "COMPLETE" immediately after dice land
-                    document.getElementById('rollButton').textContent = 'COMPLETE';
-=======
                     // Update dice faces with server values
                     updateDiceFace('dice1', dice1);
                     updateDiceFace('dice2', dice2);
@@ -1718,22 +1459,16 @@
                     if (rollButtonEl) {
                         rollButtonEl.textContent = 'COMPLETE';
                     }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     
                     // Reset for next roll (but keep bet selection) after 2 seconds
                     setTimeout(() => {
                         // Don't clear bets - keep the last selection active
                         // clearBets();
                         isRolling = false;
-<<<<<<< HEAD
-                        document.getElementById('rollButton').disabled = false;
-                        document.getElementById('rollButton').textContent = 'ROLL DICE';
-=======
                         if (rollButtonEl) {
                             rollButtonEl.disabled = false;
                             rollButtonEl.textContent = 'ROLL DICE';
                         }
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                     }, 3000);
                 }, 1000);
                 
@@ -1743,14 +1478,6 @@
                 // Refund stake on error
                 document.getElementById('balanceDisplay').textContent = `$${preRollBalance}`;
                 
-<<<<<<< HEAD
-                if (dice1) dice1.classList.remove('rolling');
-                if (dice2) dice2.classList.remove('rolling');
-                
-                // Reset scale on error
-                if (dice1 && dice2) {
-                    gsap.set([dice1, dice2], { scale: 1 });
-=======
                 // Stop rolling animation - get DOM elements by ID
                 const dice1Element = document.getElementById('dice1');
                 const dice2Element = document.getElementById('dice2');
@@ -1760,7 +1487,6 @@
                 // Reset scale on error
                 if (dice1Element && dice2Element) {
                     gsap.set([dice1Element, dice2Element], { scale: 1 });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 }
                 
                 isRolling = false;
@@ -1794,11 +1520,6 @@
         function showResult(data, betAmount) {
             const resultDiv = document.getElementById('resultDisplay');
             
-<<<<<<< HEAD
-            console.log(`🎲 Result: ${data.dice1}+${data.dice2}=${data.sum}, Bet: ${data.betType}, Win: ${data.win}, Payout: $${data.payout}`);
-            
-            if (data.win) {
-=======
             if (!resultDiv) {
                 console.error('❌ resultDisplay element not found!');
                 return;
@@ -1824,34 +1545,21 @@
                 const payoutAmount = parseFloat(data.payout) || 0;
                 const payoutMultiplier = parseFloat(data.payoutMultiplier) || 0;
                 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 resultDiv.innerHTML = `
                     <div class="text-dt-green">
                         🎉 WIN! Rolled ${data.dice1} and ${data.dice2} (Sum: ${data.sum})
                         <br>
-<<<<<<< HEAD
-                        <span class="text-lg">Bet: ${data.betType} - Payout: ${data.payoutMultiplier}:1</span>
-                        <br>
-                        <span class="text-2xl">+$${data.payout}</span>
-                    </div>
-                `;
-=======
                         <span class="text-lg">Bet: ${betName} - Payout: ${payoutMultiplier.toFixed(1)}:1</span>
                         <br>
                         <span class="text-2xl font-bold">+$${payoutAmount.toFixed(2)}</span>
                     </div>
                 `;
                 console.log(`✅ WIN result displayed in resultDisplay`);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 
                 // Show payout animation
                 const payoutText = document.createElement('div');
                 payoutText.className = 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-6xl font-bold text-dt-yellow z-50 animate-bounce';
-<<<<<<< HEAD
-                payoutText.textContent = `+$${data.payout}`;
-=======
                 payoutText.textContent = `+$${payoutAmount.toFixed(2)}`;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
                 document.body.appendChild(payoutText);
                 
                 setTimeout(() => {
@@ -1878,14 +1586,6 @@
                         <span class="text-sm text-dt-yellow">Try a different bet type!</span>
                     </div>
                 `;
-<<<<<<< HEAD
-            }
-            
-            // Clear result after delay
-            setTimeout(() => {
-                resultDiv.innerHTML = '';
-            }, 5000);
-=======
                 console.log(`❌ LOSS result displayed in resultDisplay`);
             }
             
@@ -1912,7 +1612,6 @@
                     console.log(`🧹 Result display cleared after timeout`);
                 }
             }, 8000);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         }
         
         function updateGameStats(data, betAmount) {
@@ -1950,16 +1649,6 @@
             updateRecentRollsDisplay();
             
             // Emit game action
-<<<<<<< HEAD
-            socket.emit('game-action', {
-                game: 'dice',
-                action: 'roll',
-                betAmount: betAmount,
-                win: data.win,
-                winAmount: data.payout || 0,
-                result: [data.dice1, data.dice2]
-            });
-=======
             // Socket.IO removed - using HTTP/gRPC architecture
             // Game actions are handled via HTTP endpoints to frontend-service
             // socket.emit('game-action', {
@@ -1970,7 +1659,6 @@
             //     winAmount: data.payout || 0,
             //     result: [data.dice1, data.dice2]
             // });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
         }
         
         function updateStatsDisplay() {
@@ -2204,15 +1892,8 @@
             updateBalanceDisplay();
         });
         
-<<<<<<< HEAD
-        // Socket event handlers
-        socket.on('connect', () => {
-            console.log('🔌 Connected to dice game');
-        });
-=======
         // Socket.IO removed - using HTTP/gRPC architecture instead
         // Socket event handlers no longer needed
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     </script>
 </body>
 </html>

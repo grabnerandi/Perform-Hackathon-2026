@@ -5,10 +5,7 @@
 
 const express = require('express');
 const path = require('path');
-<<<<<<< HEAD
-=======
 const fs = require('fs');
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 const { createClient } = require('./grpc-clients');
 const { createClient: createRedisClient } = require('redis');
 const { initializeOpenFeature, getFeatureFlag } = require('./common/openfeature');
@@ -30,12 +27,6 @@ initializeTelemetry('vegas-frontend-service', {
 const app = express();
 
 // Middleware to extract trace context from incoming requests
-<<<<<<< HEAD
-const { context, propagation } = require('@opentelemetry/api');
-app.use((req, res, next) => {
-  // Extract trace context from incoming request headers
-  const extractedContext = propagation.extract(context.active(), req.headers);
-=======
 // Auto-instrumentation will create HTTP spans automatically, we just need to extract context
 const { context, propagation } = require('@opentelemetry/api');
 app.use((req, res, next) => {
@@ -45,23 +36,18 @@ app.use((req, res, next) => {
   
   // Run the request handler in the extracted context
   // Auto-instrumentation will automatically create HTTP spans
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   context.with(extractedContext, () => {
     next();
   });
 });
 
 app.use(express.json());
-<<<<<<< HEAD
-app.use(express.static(path.join(__dirname, 'public')));
-=======
 // Serve static assets, using login.html as the default index for "/"
 app.use(
   express.static(path.join(__dirname, 'public'), {
     index: 'login.html',
   })
 );
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
 const PORT = process.env.PORT || 3000;
 const grpcClients = createClient();
@@ -112,16 +98,6 @@ redisClient.on('ready', () => {
 const DEFAULT_START_BALANCE = 1000;
 const BALANCE_KEY_PREFIX = 'vegas:balance:';
 
-<<<<<<< HEAD
-// Redis-based user balance functions
-async function getUserBalance(username) {
-  const key = `${BALANCE_KEY_PREFIX}${username || 'Anonymous'}`;
-  try {
-    const balance = await redisClient.get(key);
-    return balance ? parseFloat(balance) : DEFAULT_START_BALANCE;
-  } catch (error) {
-    console.error('Redis get error:', error);
-=======
 // Redis-based user balance functions with OpenTelemetry instrumentation
 async function getUserBalance(username) {
   const tracer = trace.getTracer('vegas-frontend-service');
@@ -161,21 +137,11 @@ async function getUserBalance(username) {
     span.setStatus({ code: 2, message: error.message });
     span.end();
     console.error('[Redis] Get error:', error);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     return DEFAULT_START_BALANCE;
   }
 }
 
 async function setUserBalance(username, balance) {
-<<<<<<< HEAD
-  const key = `${BALANCE_KEY_PREFIX}${username || 'Anonymous'}`;
-  try {
-    await redisClient.set(key, Math.max(0, balance).toString());
-    return Math.max(0, balance);
-  } catch (error) {
-    console.error('Redis set error:', error);
-    return balance;
-=======
   const tracer = trace.getTracer('vegas-frontend-service');
   const activeContext = context.active();
   const span = tracer.startSpan('redis.set_balance', undefined, activeContext);
@@ -214,24 +180,10 @@ async function setUserBalance(username, balance) {
     span.end();
     console.error('[Redis] Set error:', error);
     return finalBalance;
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   }
 }
 
 async function updateUserBalance(username, delta) {
-<<<<<<< HEAD
-  const key = `${BALANCE_KEY_PREFIX}${username || 'Anonymous'}`;
-  try {
-    const currentBalance = await getUserBalance(username);
-    const newBalance = Math.max(0, currentBalance + Number(delta || 0));
-    await redisClient.set(key, newBalance.toString());
-    return newBalance;
-  } catch (error) {
-    console.error('Redis update error:', error);
-    // Fallback: try to get current balance and calculate
-    const currentBalance = await getUserBalance(username);
-    return Math.max(0, currentBalance + Number(delta || 0));
-=======
   const tracer = trace.getTracer('vegas-frontend-service');
   const activeContext = context.active();
   const span = tracer.startSpan('redis.update_balance', undefined, activeContext);
@@ -284,7 +236,6 @@ async function updateUserBalance(username, delta) {
     // Fallback: try to get current balance and calculate
     const currentBalance = await getUserBalance(username);
     return Math.max(0, currentBalance + deltaNum);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   }
 }
 
@@ -314,20 +265,12 @@ app.get('/health', (req, res) => {
 
 // Get all available games
 app.get('/api/games', async (req, res) => {
-<<<<<<< HEAD
-=======
   // Create a child span for business logic (HTTP span is created by auto-instrumentation)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   const tracer = trace.getTracer('vegas-frontend-service');
   const span = tracer.startSpan('lobby.get_games');
   
   try {
     span.setAttributes({
-<<<<<<< HEAD
-      'http.method': 'GET',
-      'http.route': '/api/games',
-=======
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       'lobby.action': 'list_games',
     });
     
@@ -376,81 +319,17 @@ app.get('/api/games', async (req, res) => {
 });
 
 // Get game assets for a specific game
-<<<<<<< HEAD
-app.get('/api/games/:gameId/assets', async (req, res) => {
-  try {
-    const { gameId } = req.params;
-    const { assetType = 'all' } = req.query;
-
-    let assets;
-    switch (gameId) {
-      case 'slots':
-        assets = await grpcClients.slots.getGameAssets({ assetType });
-        break;
-      case 'roulette':
-        // Roulette service uses HTTP endpoint, not gRPC
-        try {
-          const rouletteResponse = await fetch(`${process.env.ROULETTE_SERVICE_URL || 'http://localhost:8082'}/api/game-assets`);
-          if (rouletteResponse.ok) {
-            const rouletteData = await rouletteResponse.json();
-            assets = {
-              html: rouletteData.html || '',
-              javascript: rouletteData.javascript || '',
-              css: rouletteData.css || '',
-              config: rouletteData.config || {}
-            };
-          } else {
-            throw new Error(`Roulette service returned ${rouletteResponse.status}`);
-          }
-        } catch (error) {
-          // Fallback: try gRPC if HTTP fails
-          if (grpcClients.roulette && grpcClients.roulette.getGameAssets) {
-            assets = await grpcClients.roulette.getGameAssets({ assetType });
-          } else {
-            throw error;
-          }
-        }
-        break;
-      case 'dice':
-        assets = await grpcClients.dice.getGameAssets({ assetType });
-        break;
-      case 'blackjack':
-        assets = await grpcClients.blackjack.getGameAssets({ assetType });
-        break;
-      default:
-        return res.status(404).json({ error: 'Game not found' });
-    }
-
-    res.json({
-      gameId,
-      html: assets.html,
-      javascript: assets.javascript,
-      css: assets.css,
-      config: assets.config
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-=======
 // Deprecated: /api/games/:gameId/assets endpoint removed
 // Games are now served as static HTML files, no need for dynamic asset fetching
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 
 // Helper function to update balance from game result
 async function updateBalanceFromGameResult(username, betAmount, result) {
   if (!username) return null;
   
   // Validate betAmount - must be greater than 0 to record game result
-<<<<<<< HEAD
-  // This prevents invalid records from being saved to the database
-  if (!betAmount || betAmount <= 0 || isNaN(betAmount)) {
-    console.warn(`[Scoring] Skipping game result recording: invalid betAmount (${betAmount}) for user ${username}`);
-=======
   // Validate bet amount
   if (!betAmount || betAmount <= 0 || isNaN(betAmount)) {
     console.warn(`[Balance] Invalid betAmount (${betAmount}) for user ${username}`);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     return null;
   }
   
@@ -467,74 +346,8 @@ async function updateBalanceFromGameResult(username, betAmount, result) {
     // Get updated balance
     const newBalance = await getUserBalance(username);
     
-<<<<<<< HEAD
-    // Record game result in PostgreSQL via scoring service
-    try {
-      const scoringServiceUrl = process.env.SCORING_SERVICE_URL || 'http://localhost:8085';
-      const game = result.game || 'unknown';
-      const action = result.action || 'play';
-      const win = payout > 0;
-      const resultType = result.result || (win ? 'win' : 'lose');
-      
-      // Prepare game-specific data
-      const gameData = {};
-      if (result.result) gameData.result = result.result; // slots symbols, dice values, etc.
-      if (result.winning_number) gameData.winningNumber = result.winning_number; // roulette
-      if (result.dice1) gameData.dice1 = result.dice1; // dice
-      if (result.dice2) gameData.dice2 = result.dice2; // dice
-      if (result.playerHand) gameData.playerHand = result.playerHand; // blackjack
-      if (result.dealerHand) gameData.dealerHand = result.dealerHand; // blackjack
-      
-      // Record game result - betAmount is already validated above
-      await fetch(`${scoringServiceUrl}/api/scoring/game-result`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          game: game,
-          action: action,
-          betAmount: betAmount,
-          payout: payout,
-          win: win,
-          result: resultType,
-          gameData: JSON.stringify(gameData),
-          metadata: JSON.stringify({
-            balance: newBalance,
-            timestamp: new Date().toISOString(),
-            cheatActive: result.cheat_active || false,
-            cheatType: result.cheat_type || null
-          })
-        })
-      }).catch(err => {
-        console.warn('Failed to record game result in scoring service:', err.message);
-      });
-      
-      // Also record score (balance) for leaderboard
-      await fetch(`${scoringServiceUrl}/api/scoring/record`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          role: 'player',
-          game: game,
-          score: newBalance,
-          metadata: JSON.stringify({
-            betAmount: betAmount,
-            payout: payout,
-            win: win,
-            timestamp: new Date().toISOString()
-          })
-        })
-      }).catch(err => {
-        console.warn('Failed to record score in scoring service:', err.message);
-      });
-    } catch (scoringError) {
-      console.warn('Error recording game result:', scoringError.message);
-    }
-=======
     // Scoring is now handled by backend game services (only on wins)
     // Frontend service no longer calls scoring service directly
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     
     return newBalance;
   } catch (error) {
@@ -546,9 +359,6 @@ async function updateBalanceFromGameResult(username, betAmount, result) {
 // Game action endpoints (proxies to gRPC and updates balance)
 app.post('/api/games/:gameId/spin', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.start');
-=======
   const activeContext = context.active();
   
   // Log trace context for debugging
@@ -562,7 +372,6 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.start', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -593,8 +402,6 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
       return res.status(503).json({ error: errorMsg, gameId });
     }
     
-<<<<<<< HEAD
-=======
     // Convert frontend request format to gRPC format
     // For roulette, handle bet_type and bet_value (for multiple bets)
     // If multiple bets, calculate total bet amount from BetValue
@@ -608,31 +415,17 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
       console.log(`[Roulette] Multiple bets detected. Total bet amount: ${totalBetAmount}`);
     }
     
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     // Get current balance and check if user has enough
     const currentBalance = await getUserBalance(username);
     span.setAttribute('user.balance_before', currentBalance);
     
-<<<<<<< HEAD
-    if (currentBalance < betAmount) {
-=======
     if (currentBalance < totalBetAmount) {
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       span.setAttribute('game.error', 'insufficient_balance');
       span.setStatus({ code: 2, message: 'Insufficient balance' });
       span.end();
       return res.status(400).json({ 
         error: 'Insufficient balance', 
         balance: currentBalance,
-<<<<<<< HEAD
-        required: betAmount 
-      });
-    }
-    
-    // Convert frontend request format to gRPC format
-    const grpcRequest = {
-      bet_amount: betAmount,
-=======
         required: totalBetAmount 
       });
     }
@@ -641,7 +434,6 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
       bet_amount: totalBetAmount, // Total bet amount (sum of all bets if multiple)
       bet_type: req.body.BetType || req.body.bet_type || (gameId === 'roulette' ? 'red' : undefined),
       bet_value: req.body.BetValue || req.body.bet_value || {},
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       cheat_active: req.body.CheatActive || req.body.cheat_active || false,
       cheat_type: req.body.CheatType || req.body.cheat_type || '',
       player_info: {
@@ -652,19 +444,11 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
       }
     };
     
-<<<<<<< HEAD
-    console.log(`[gRPC] Calling ${gameId}.spin with request:`, JSON.stringify(grpcRequest).substring(0, 200));
-    const result = await grpcClients[gameId].spin(grpcRequest);
-    console.log(`[gRPC] ${gameId}.spin response:`, result ? 'success' : 'failed', result ? `win: ${result.win}, payout: ${result.payout || result.win_amount || 0}` : '');
-    
-    // Add game identifier and action to result for scoring
-=======
     console.log(`[gRPC] Calling ${gameId}.spin with request:`, JSON.stringify(grpcRequest).substring(0, 500));
     const result = await grpcClients[gameId].spin(grpcRequest);
     console.log(`[gRPC] ${gameId}.spin response:`, result ? 'success' : 'failed', result ? `win: ${result.win}, payout: ${result.payout || result.win_amount || 0}` : '');
     
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'spin';
     
@@ -679,12 +463,8 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
     });
     
     // Update balance based on game result
-<<<<<<< HEAD
-    const newBalance = await updateBalanceFromGameResult(username, betAmount, result);
-=======
     // Use totalBetAmount for balance calculation (sum of all bets if multiple)
     const newBalance = await updateBalanceFromGameResult(username, totalBetAmount, result);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     span.setAttribute('user.balance_after', newBalance || currentBalance);
     
     span.setStatus({ code: 1 }); // OK
@@ -706,9 +486,6 @@ app.post('/api/games/:gameId/spin', async (req, res) => {
 
 app.post('/api/games/:gameId/roll', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.start');
-=======
   const activeContext = context.active();
   
   // Log trace context for debugging
@@ -722,7 +499,6 @@ app.post('/api/games/:gameId/roll', async (req, res) => {
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.start', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -784,11 +560,7 @@ app.post('/api/games/:gameId/roll', async (req, res) => {
     const result = await grpcClients[gameId].roll(grpcRequest);
     console.log(`[gRPC] ${gameId}.roll response:`, result ? 'success' : 'failed', result ? `win: ${result.win}, payout: ${result.payout || 0}` : '');
     
-<<<<<<< HEAD
-    // Add game identifier and action to result for scoring
-=======
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'roll';
     
@@ -821,9 +593,6 @@ app.post('/api/games/:gameId/roll', async (req, res) => {
 
 app.post('/api/games/:gameId/deal', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.start');
-=======
   const activeContext = context.active();
   
   // Log trace context for debugging
@@ -837,7 +606,6 @@ app.post('/api/games/:gameId/deal', async (req, res) => {
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.start', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -912,15 +680,10 @@ app.post('/api/games/:gameId/deal', async (req, res) => {
     span.setStatus({ code: 1 });
     span.end();
     
-<<<<<<< HEAD
-    res.json({
-      ...result,
-=======
     // Return gRPC response format (snake_case) to maintain consistency
     // Frontend will convert as needed
     res.json({
       ...result, // gRPC response already in snake_case
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       newBalance: newBalance
     });
   } catch (error) {
@@ -934,14 +697,10 @@ app.post('/api/games/:gameId/deal', async (req, res) => {
 
 app.post('/api/games/:gameId/hit', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.action');
-=======
   const activeContext = context.active();
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.action', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -989,10 +748,7 @@ app.post('/api/games/:gameId/hit', async (req, res) => {
     span.setStatus({ code: 1 });
     span.end();
     
-<<<<<<< HEAD
-=======
     // Return gRPC response format (snake_case) - frontend uses gRPC through this service
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     res.json(result);
   } catch (error) {
     span.recordException(error);
@@ -1005,14 +761,10 @@ app.post('/api/games/:gameId/hit', async (req, res) => {
 
 app.post('/api/games/:gameId/stand', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.action');
-=======
   const activeContext = context.active();
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.action', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -1061,11 +813,7 @@ app.post('/api/games/:gameId/stand', async (req, res) => {
     const result = await grpcClients[gameId].stand(grpcRequest);
     console.log(`[gRPC] ${gameId}.stand response:`, result ? 'success' : 'failed', result ? `result: ${result.result}, payout: ${result.payout || 0}` : '');
     
-<<<<<<< HEAD
-    // Add game identifier and action to result for scoring
-=======
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'stand';
     
@@ -1076,11 +824,7 @@ app.post('/api/games/:gameId/stand', async (req, res) => {
     }
     
     span.setAttributes({
-<<<<<<< HEAD
-      'game.player_score': result.playerScore || result.dealer_score || 0,
-=======
       'game.player_score': result.playerScore || result.player_score || 0,
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       'game.dealer_score': result.dealerScore || result.dealer_score || 0,
       'game.result': result.result || 'unknown',
       'game.payout': payout,
@@ -1095,15 +839,9 @@ app.post('/api/games/:gameId/stand', async (req, res) => {
     span.setStatus({ code: 1 });
     span.end();
     
-<<<<<<< HEAD
-    // Add newBalance to response
-    res.json({
-      ...result,
-=======
     // Return gRPC response format (snake_case) - frontend uses gRPC through this service
     res.json({
       ...result, // gRPC response already in snake_case
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       newBalance: newBalance
     });
   } catch (error) {
@@ -1117,14 +855,10 @@ app.post('/api/games/:gameId/stand', async (req, res) => {
 
 app.post('/api/games/:gameId/double', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('game.action');
-=======
   const activeContext = context.active();
   
   // Start span in the active context (which should have trace context from middleware)
   const span = tracer.startSpan('game.action', undefined, activeContext);
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   
   // Extract gameId at the start to ensure it's always available
   const gameId = req.params?.gameId || 'unknown';
@@ -1188,11 +922,7 @@ app.post('/api/games/:gameId/double', async (req, res) => {
     const result = await grpcClients[gameId].double(grpcRequest);
     console.log(`[gRPC] ${gameId}.double response:`, result ? 'success' : 'failed');
     
-<<<<<<< HEAD
-    // Add game identifier and action to result for scoring
-=======
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'double';
     
@@ -1217,15 +947,9 @@ app.post('/api/games/:gameId/double', async (req, res) => {
     span.setStatus({ code: 1 });
     span.end();
     
-<<<<<<< HEAD
-    // Add newBalance to response
-    res.json({
-      ...result,
-=======
     // Return gRPC response format (snake_case) - frontend uses gRPC through this service
     res.json({
       ...result, // gRPC response already in snake_case
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       newBalance: newBalance
     });
   } catch (error) {
@@ -1236,74 +960,6 @@ app.post('/api/games/:gameId/double', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// Render game page
-app.get('/games/:gameId', async (req, res) => {
-  try {
-    const { gameId } = req.params;
-    const assets = await grpcClients[gameId].getGameAssets({ assetType: 'all' });
-
-    const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${assets.config.game_name || gameId}</title>
-    <style>${assets.css}</style>
-</head>
-<body>
-    ${assets.html}
-    <script>
-        // Inject game configuration
-        window.GAME_CONFIG = ${JSON.stringify(assets.config)};
-        window.GRPC_ENDPOINT = '${assets.config.service_endpoint}';
-    </script>
-    <script>${assets.javascript}</script>
-</body>
-</html>`;
-
-    res.send(html);
-  } catch (error) {
-    res.status(500).send(`<h1>Error loading game</h1><p>${error.message}</p>`);
-  }
-});
-
-// User management endpoints
-app.post('/api/user/init', async (req, res) => {
-  const tracer = trace.getTracer('vegas-frontend-service');
-  const span = tracer.startSpan('user.init');
-  
-  try {
-    const username = (req.body && (req.body.Username || req.body.username)) || 'Anonymous';
-    const { Balance } = req.body;
-    
-    span.setAttributes({
-      'user.username': username,
-      'user.initial_balance': Balance || 'default',
-      'http.method': 'POST',
-      'http.route': '/api/user/init',
-    });
-    
-    // If Balance is provided in the request, use it (for initial setup from form)
-    if (typeof Balance === 'number' && Balance >= 0) {
-      await setUserBalance(username, Balance);
-    }
-    
-    const balance = await getUserBalance(username);
-    span.setAttribute('user.balance', balance);
-    span.setStatus({ code: 1 });
-    span.end();
-    
-    res.json({ username: username, balance: balance });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: 2, message: error.message });
-    span.end();
-    console.error('Error in /api/user/init:', error);
-    res.status(500).json({ error: 'Failed to initialize user' });
-  }
-=======
 // Deprecated: /games/:gameId route removed
 // Games are now served as static HTML files (e.g., /slots.html, /roulette.html, etc.)
 // No need for dynamic game page rendering
@@ -1470,15 +1126,11 @@ app.post('/api/user/init', async (req, res) => {
       res.status(500).json({ error: 'Failed to initialize user' });
     }
   });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 });
 
 app.get('/api/user/balance', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-=======
   // Create a child span for business logic (HTTP span is created by auto-instrumentation)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   const span = tracer.startSpan('user.get_balance');
   
   try {
@@ -1508,74 +1160,6 @@ app.get('/api/user/balance', async (req, res) => {
 
 app.post('/api/user/topup', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-  const span = tracer.startSpan('user.deposit');
-  
-  try {
-    const { Username, Amount } = req.body;
-    const username = Username || 'Anonymous';
-    const amount = Math.max(0, Number(Amount || 0));
-    
-    span.setAttributes({
-      'user.username': username,
-      'transaction.type': 'deposit',
-      'transaction.amount': amount,
-      'http.method': 'POST',
-      'http.route': '/api/user/topup',
-    });
-    
-    const balanceBefore = await getUserBalance(username);
-    span.setAttribute('user.balance_before', balanceBefore);
-    
-    const newBalance = await updateUserBalance(username, amount);
-    span.setAttribute('user.balance_after', newBalance);
-    
-    // Log deposit
-    logger.logDeposit(username, amount, balanceBefore, newBalance, {
-      transaction_id: req.body.TransactionId || req.body.CorrelationId || `deposit-${Date.now()}`,
-      source: req.body.Source || 'web-ui'
-    });
-    
-    // Record score in PostgreSQL via scoring service
-    try {
-      const scoringServiceUrl = process.env.SCORING_SERVICE_URL || 'http://localhost:8085';
-      const role = req.body.Role || req.body.role || 'player';
-      const game = req.body.Game || req.body.game || 'deposit';
-      
-      await fetch(`${scoringServiceUrl}/api/scoring/record`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username,
-          role: role,
-          game: game,
-          score: newBalance, // Use balance as score
-          metadata: JSON.stringify({
-            depositAmount: amount,
-            timestamp: new Date().toISOString()
-          })
-        })
-      }).catch(err => {
-        console.warn('Failed to record score in scoring service:', err.message);
-        // Don't fail the request if scoring service is unavailable
-      });
-    } catch (scoringError) {
-      console.warn('Error recording score:', scoringError.message);
-      // Continue even if scoring fails
-    }
-    
-    span.setStatus({ code: 1 });
-    span.end();
-    
-    res.json({ username: username, balance: newBalance });
-  } catch (error) {
-    span.recordException(error);
-    span.setStatus({ code: 2, message: error.message });
-    span.end();
-    console.error('Error in /api/user/topup:', error);
-    res.status(500).json({ error: 'Failed to top up balance' });
-  }
-=======
   const activeContext = context.active();
   
   // Create a child span for business logic (HTTP span is created by auto-instrumentation)
@@ -1633,7 +1217,6 @@ app.post('/api/user/topup', async (req, res) => {
       res.status(500).json({ error: 'Failed to top up balance' });
     }
   });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 });
 
 // Lobby entry tracking endpoint
@@ -1697,10 +1280,7 @@ app.post('/api/user/navigate', async (req, res) => {
 // Direct game endpoints for backward compatibility (dice.html and slots.html use these)
 app.post('/api/dice/roll', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-=======
   // Create a child span for business logic (HTTP span is created by auto-instrumentation)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   const span = tracer.startSpan('game.start');
   
   try {
@@ -1752,11 +1332,7 @@ app.post('/api/dice/roll', async (req, res) => {
     const result = await grpcClients[gameId].roll(grpcRequest);
     console.log(`[gRPC] ${gameId}.roll response:`, result ? 'success' : 'failed', result ? `win: ${result.win}, payout: ${result.payout || 0}` : '');
     
-<<<<<<< HEAD
-    // Add game identifier and action to result for scoring
-=======
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'roll';
     
@@ -1790,10 +1366,7 @@ app.post('/api/dice/roll', async (req, res) => {
 // Direct slots endpoint for backward compatibility  
 app.post('/api/slots/spin', async (req, res) => {
   const tracer = trace.getTracer('vegas-frontend-service');
-<<<<<<< HEAD
-=======
   // Create a child span for business logic (HTTP span is created by auto-instrumentation)
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   const span = tracer.startSpan('game.start');
   
   try {
@@ -1830,16 +1403,11 @@ app.post('/api/slots/spin', async (req, res) => {
     }
     
     // Convert frontend request format to gRPC format
-<<<<<<< HEAD
-    const grpcRequest = {
-      bet_amount: betAmount,
-=======
     // For roulette, handle bet_type and bet_value (for multiple bets)
     const grpcRequest = {
       bet_amount: betAmount,
       bet_type: req.body.BetType || req.body.bet_type || (gameId === 'roulette' ? 'red' : undefined),
       bet_value: req.body.BetValue || req.body.bet_value || {},
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
       cheat_active: req.body.CheatActive || req.body.cheat_active || false,
       cheat_type: req.body.CheatType || req.body.cheat_type || '',
       player_info: {
@@ -1854,11 +1422,7 @@ app.post('/api/slots/spin', async (req, res) => {
     const result = await grpcClients[gameId].spin(grpcRequest);
     console.log(`[gRPC] ${gameId}.spin response:`, result ? 'success' : 'failed', result ? `win: ${result.win}, payout: ${result.payout || result.win_amount || 0}` : '');
     
-<<<<<<< HEAD
-    // Add game identifier and action to result for scoring
-=======
     // Add game identifier and action to result
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
     result.game = gameId;
     result.action = 'spin';
     
@@ -1932,24 +1496,6 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-// Dashboard endpoints
-app.get('/api/dashboard/:game', async (req, res) => {
-  try {
-    const { game } = req.params;
-    const scoringServiceUrl = process.env.SCORING_SERVICE_URL || 'http://localhost:8085';
-    
-    const response = await fetch(`${scoringServiceUrl}/api/scoring/dashboard/${game}`);
-    if (!response.ok) {
-      throw new Error(`Scoring service returned ${response.status}`);
-    }
-    
-    const stats = await response.json();
-    res.json({ game, stats });
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
-=======
 // Helper function to derive topWin from topPlayers array
 function deriveTopWinFromTopPlayers(stats) {
   console.log(`[Frontend] 🔍 deriveTopWinFromTopPlayers called with stats:`, {
@@ -2207,26 +1753,10 @@ app.get('/api/dashboard/:game', async (req, res) => {
     span.end();
     console.error(`[gRPC] Error calling dashboard.getDashboardStats:`, error.message, error.stack);
     res.status(500).json({ error: error.message });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   }
 });
 
 app.get('/api/dashboard', async (req, res) => {
-<<<<<<< HEAD
-  try {
-    const scoringServiceUrl = process.env.SCORING_SERVICE_URL || 'http://localhost:8085';
-    
-    const response = await fetch(`${scoringServiceUrl}/api/scoring/dashboard`);
-    if (!response.ok) {
-      throw new Error(`Scoring service returned ${response.status}`);
-    }
-    
-    const stats = await response.json();
-    res.json({ stats });
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
-    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
-=======
   const tracer = trace.getTracer('vegas-frontend-service');
   const span = tracer.startSpan('dashboard.get_all_stats');
   
@@ -2420,7 +1950,6 @@ app.get('/api/dashboard', async (req, res) => {
     span.end();
     console.error(`[gRPC] Error calling dashboard.getAllDashboardStats:`, error.message, error.stack);
     res.status(500).json({ error: error.message, stats: [] });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
   }
 });
 
@@ -2445,9 +1974,6 @@ app.get('/api/game-results/:game', async (req, res) => {
 
 // Main lobby page
 app.get('/', (req, res) => {
-<<<<<<< HEAD
-  res.sendFile(path.join(__dirname, 'public/lobby.html'));
-=======
   const lobbyPath = path.join(__dirname, 'public', 'lobby.html');
   console.log('[Frontend] Incoming GET / request, attempting to serve lobby from:', lobbyPath);
 
@@ -2468,7 +1994,6 @@ app.get('/', (req, res) => {
       }
     });
   });
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
 });
 
 // Graceful shutdown

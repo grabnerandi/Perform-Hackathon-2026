@@ -15,9 +15,6 @@ if (require('fs').existsSync(__dirname + '/roulette-service.js')) {
 
 
 
-<<<<<<< HEAD
-=======
 
 
 
->>>>>>> 808c574 (Prepare Perform Hackathon 2026: Update to OpenTelemetry v2 and various improvements)
