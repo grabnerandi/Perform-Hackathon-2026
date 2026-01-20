@@ -3,7 +3,7 @@
 
 # Global configuration
 global:
-  imageRegistry: hrexed/vegasapp
+  imageRegistry: GITHUB_USER/vegasapp
   imageTag: "0.39"
   imagePullPolicy: IfNotPresent
   namespace: vegas-casino
@@ -14,7 +14,7 @@ global:
   # Dynatrace team identifier for dt.owner annotation (includes codespace name for uniqueness)
   # Format: <demo_name_kebab>-<codespace_name>
   # Example: vegas-casino-app-henrik-codespace-123
-  teamIdentifier: "vegas-casino-app"
+  teamIdentifier: "TEAM_IDENTIFIER"
   
 # OpenTelemetry configuration
 opentelemetry:

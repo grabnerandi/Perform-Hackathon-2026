@@ -52,7 +52,7 @@ metadata:
   name: edge-connect-obs
 roleRef:
   kind: ClusterRole
-  name: edge-connect-hpa
+  name: edge-connect-obs
   apiGroup: rbac.authorization.k8s.io
 subjects:
   - kind: ServiceAccount
